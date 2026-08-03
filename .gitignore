@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# ── KRITICNO: stvarne fakture sadrze poslovne podatke (naziv firme, JIB,
+# adresa, broj fakture) i NIKAD ne smiju u git istoriju.
+*.psproj/samples/
+*.psproj/expected/
+*.psproj/out/
+tests/fixtures/real/
+samples/
+
+# Privatni kljuc za potpisivanje parsera - nikad u repo
+*.pem
+*.key
+signing_key*
+
+# Lokalna konfiguracija (putanje do deklarant_pro, do kljuca)
+config.local.json
+.env
