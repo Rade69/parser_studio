@@ -19,8 +19,10 @@ samples/
 # ── Benchmark eksperiment (Docling vs PaddleOCR) — izolovani env i outputi
 experiments/document_engines/docling_env/
 experiments/document_engines/paddle_env/
+experiments/document_engines/paddle_env_3_0_0/
 experiments/document_engines/outputs/
 experiments/document_engines/models/
+experiments/document_engines/quality_v3/
 # benchmark/ skripte i lock fajlovi SE PRATE (nisu u ignore)
 
 # Privatni kljuc za potpisivanje parsera - nikad u repo
