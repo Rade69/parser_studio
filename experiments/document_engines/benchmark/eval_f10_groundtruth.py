@@ -17,9 +17,12 @@ def main():
         name = gt_file.stem.replace("_ground_truth", "")
         with open(gt_file, "r", encoding="utf-8") as f:
             gt = json.load(f)
-        rows = gt.get("rows", [])
+        # Prefer sampled_rows_for_f10 (sa q/p/a), fallback na rows
+        rows = gt.get("sampled_rows_for_f10", gt.get("rows", []))
+        # Filtriraj samo redove sa numeric q/p/a
+        rows = [r for r in rows if r.get("quantity") is not None and r.get("unit_price") is not None and r.get("line_amount") is not None]
         if not rows:
-            print(f"{name}: NO ROWS in ground-truth", flush=True)
+            print(f"{name}: NO F10 ROWS in ground-truth", flush=True)
             continue
         res = evaluate_f10(rows)
         print(f"{name}: {res['verdict']} eligible={res['eligible_rows']} failed={res['failed_rows']} rate={res['failed_rate']} severe={res['severe_mismatches']}", flush=True)

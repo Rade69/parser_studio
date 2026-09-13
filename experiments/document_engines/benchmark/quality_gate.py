@@ -474,12 +474,32 @@ def evaluate_f9(table_data: dict) -> dict:
         b2 = any(len(nums) >= 2 for t, nums in cell_nums)
         # B4: broj ćelija odstupa >= 2 od moda
         b4 = abs(len(row) - modal_n_cells) >= 2
-        # B3: overlap sa susjednom kolonom >= 25% — zahtijeva X centre; samo info
+        # B3: overlap sa susjednom kolonom >= 25%
+        b3 = False
+        if column_x_centers and any(x is not None for x in cell_x_centers):
+            expected_xs = sorted(set(column_x_centers.values()))
+            if len(expected_xs) >= 2 and cell_x_centers[0] is not None:
+                for cell_x in cell_x_centers:
+                    if cell_x is None:
+                        continue
+                    for j in range(len(expected_xs) - 1):
+                        x_lo, x_hi = expected_xs[j], expected_xs[j + 1]
+                        span = x_hi - x_lo
+                        if span > 0:
+                            mid = (x_lo + x_hi) / 2
+                            offset = abs(cell_x - mid) / span
+                            if offset > 0.25:
+                                b3 = True
+                                break
+                    if b3:
+                        break
         reasons = []
         if missing_numeric >= 2:
             reasons.append("B1")
         if b2:
             reasons.append("B2")
+        if b3:
+            reasons.append("B3")
         if b4:
             reasons.append("B4")
         if reasons:
@@ -493,7 +513,15 @@ def evaluate_f9(table_data: dict) -> dict:
             analyzable.append(i)
     broken_count = len(broken_details)
     rate = broken_count / max(len(rows), 1)
-    f9_true = len(rows) >= 5 and broken_count >= 2 and rate > 0.20
+    # Standard trigger: ≥5 redova, ≥2 broken, >20%
+    standard_trigger = len(rows) >= 5 and broken_count >= 2 and rate > 0.20
+    # Small-table trigger: 3-4 reda, ≥2 broken, ≥50%
+    small_table_trigger = (
+        3 <= len(rows) <= 4
+        and broken_count >= 2
+        and rate >= 0.50
+    )
+    f9_true = standard_trigger or small_table_trigger
     return {
         "triggered": f9_true,
         "verdict": "TRUE" if f9_true else "FALSE",
@@ -502,7 +530,13 @@ def evaluate_f9(table_data: dict) -> dict:
         "broken_rate": round(rate, 4),
         "broken_details": broken_details,
         "modal_n_cells": modal_n_cells,
-        "reason": "broken_rows_above_20pct" if f9_true else "stable",
+        "standard_trigger": standard_trigger,
+        "small_table_trigger": small_table_trigger,
+        "reason": (
+            "broken_rows_above_20pct" if standard_trigger
+            else "small_table_broken_above_50pct" if small_table_trigger
+            else "stable"
+        ),
     }
 
 
