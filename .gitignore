@@ -12,7 +12,15 @@ venv/
 *.psproj/expected/
 *.psproj/out/
 tests/fixtures/real/
+tests/fakture/
 samples/
+
+# ── Benchmark eksperiment (Docling vs PaddleOCR) — izolovani env i outputi
+experiments/document_engines/docling_env/
+experiments/document_engines/paddle_env/
+experiments/document_engines/outputs/
+experiments/document_engines/models/
+# benchmark/ skripte i lock fajlovi SE PRATE (nisu u ignore)
 
 # Privatni kljuc za potpisivanje parsera - nikad u repo
 *.pem
