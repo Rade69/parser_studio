@@ -142,8 +142,8 @@ Većina grešaka je u `tests/unit/test_table_stitcher.py` i drugim benchmark/tes
 | A2 | DONE | Evidence domain u `src/parser_studio/domain/evidence/`: 6 modela (Locator, Evidence, DocumentEvidence, Candidate, ExtractionContext) + cell_compat adapter + 41 unit testova (svi PASS). pytest 221 PASS + 1 FAIL (test_f9 pre-existing). Commit c1a07d6, pushan. |
 | A3 | DONE | DocumentReader Protocol u `src/parser_studio/ports/` + ExcelDocumentReader u `src/parser_studio/adapters/documents/` (.xlsx openpyxl, .xlsm, .xls xlrd, keširanje, DocumentEvidence output) + 16 unit testova (svi PASS). pytest 237 PASS + 1 FAIL (test_f9 pre-existing). Legacy `core/` netaknut. Commit 439e386 + cleanup 36218cf, pushan. |
 | A4 | DONE | CandidateProducer Protocol u `src/parser_studio/ports/candidate_producer.py` + FieldContext dataclass + ExcelHeadersEngine migriran u 4 modula: `domain/invoice/fields.py` (75+ aliasa u 13 polja), `domain/extraction/header_matching.py` (normalize/match/identify), `application/extraction/producers/excel_header.py` (ExcelHeaderProducer) + helper `_sheet_utils.py` + 49 unit testova (svi PASS). pytest 286 PASS + 1 FAIL (test_f9 pre-existing). Legacy `core/engines/` netaknut. Commit e08c1ae + cleanup b1671f6, pushan. |
-| A5 | NOT_STARTED | Application use-case skeleton nije kreiran. |
-| A6 | NOT_STARTED | `LearningRepository` ne postoji. |
+| A5 | DONE | Application sloj sa 3 use case-a: ImportDocument (application/ingest/), AnalyzeInvoice (application/extraction/), ConfirmInvoice (application/review/) + ExtractionDraft (domain/extraction/) + LearningEvent + EventType (domain/learning/) + LearningRepository Protocol. bootstrap.py sa build_default_application() wiring. 24 unit testova (svi PASS). pytest 310 PASS + 1 FAIL (test_f9 pre-existing). Application NE importuje openpyxl/xlrd (sve preko DocumentReader porta). Commit c23f7a9, pushan. |
+| A6 | NOT_STARTED | `LearningRepository` port + SQLite adapter nisu implementirani (Protocol deklarisan u A5, A6 doda adapter). |
 | A7 | NOT_STARTED | Presentation migracija nije urađena; legacy `core/services/views` i dalje aktivni. |
 
 ---

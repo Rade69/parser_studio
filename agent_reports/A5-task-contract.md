@@ -1,7 +1,7 @@
 ---
 task_id: A5
 title: "Application use case-ovi — ImportDocument, AnalyzeInvoice, ConfirmInvoice"
-status: ACTIVE
+status: DONE
 risk: MEDIUM-HIGH
 date: 2026-09-14
 branch: dev (base)
