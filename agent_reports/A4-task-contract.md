@@ -1,7 +1,7 @@
 ---
 task_id: A4
 title: "CandidateProducer Protocol + migracija ExcelHeadersEngine na 4 modula + ukidanje Engine koncepta"
-status: ACTIVE
+status: DONE
 risk: MEDIUM-HIGH
 date: 2026-09-14
 branch: dev (base)
