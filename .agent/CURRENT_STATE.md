@@ -9,7 +9,7 @@
 ```text
 Date:           2026-09-14
 Branch:         dev
-HEAD:           12a1ccb — FAZA C (Generic extraction C1-C5) merge
+HEAD:           69770cb — FAZA D (Oracle bootstrap D1-D3) merge
 Working tree:   clean za tracked fajlove; UNTRACKED: PARSER_STUDIO_GUI_BLUEPRINT_V1.md,
                 PARSER_STUDIO_KANONSKI_PLAN_V3_2.md, agent_reports/M1-task-contract.md,
                 asset/ (GUI mockup)
@@ -52,8 +52,8 @@ Ako se `docs/PLAN.md` (v3.2) i stari V3 razlikuju, **V3.2 je autoritet**. Posebn
 ## Current canonical phase
 
 ```text
-Phase:          FAZA UI0 (GATE-0 LOCKED) + FAZA B COMPLETE + FAZA C COMPLETE
-Current step:   FAZA C DONE; sledeca FAZA D (Oracle bootstrap, V3_2 §44)
+Phase:          FAZA UI0 (GATE-0 LOCKED) + FAZA B COMPLETE + FAZA C COMPLETE + FAZA D COMPLETE
+Current step:   FAZA D DONE; sledeca FAZA E (Layout Learning — preostali dio)
 ```
 
 FAZA UI0 (Product/GUI Blueprint) **ZAKLJUČANA** 14.09.2026 sa `docs/GUI_BLUEPRINT.md` (komplet blueprint: application shell + 9 glavnih ekrana + 9 modala + 16 obaveznih stanja + centralni tok).
@@ -64,7 +64,9 @@ FAZA UI0 (Product/GUI Blueprint) **ZAKLJUČANA** 14.09.2026 sa `docs/GUI_BLUEPRI
 
 **FAZA C COMPLETE** (C1+C2+C3+C4+C5 = 148 novih testova, svi merge-ovani u dev).
 
-Sledeca FAZA: **D — Oracle bootstrap** (V3_2 §44 FAZA D).
+**FAZA D COMPLETE** (D1+D2+D3 = 148 novih testova, svi merge-ovani u dev).
+
+Sledeca FAZA: **E — Layout Learning** (preostali dio: E3 Matcher, E4 Drift, E5 Holdout + E6 OCR Reading Map).
 
 ---
 
@@ -140,13 +142,13 @@ Sljedeće iz V3 **još ne postoji** u kodu:
 ## Test baseline
 
 ```text
-pytest:        730 PASS, 1 SKIP, 1 FAIL
-ruff:          192 errors (ista kao M5 — FAZA C dodala 0; preostali su pre-existing FAZA A)
-contract drift: PASS (FAZA C ne dira contract/)
-architecture:   4 PASS (FAZA C ne smije break-ati V3 DEP-001..DEP-004 — netaknuto)
+pytest:        878 PASS, 1 SKIP, 1 FAIL
+ruff:          192 errors (ista kao M5 — FAZA D dodala 0; preostali su pre-existing FAZA A)
+contract drift: PASS (FAZA D koristi contract/, ali read-only kroz adaptere)
+architecture:   4 PASS (FAZA D NE smije break-ati V3 DEP-001..DEP-004 — netaknuto)
 ```
 
-Delta vs M5: 582 → 730 = +148 novih testova (C1: 34, C2: 80, C3: 18, C4: 43, C5: 16 — 43 od C2 refaktorisano kroz ruff cleanup commit).
+Delta vs FAZA C: 730 → 878 = +148 novih testova (D1: 33, D2: 42, D3: 40 — neki preklapaju).
 
 ### pytest FAIL detalji
 
@@ -186,6 +188,9 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 | C3 | DONE | ResolveCandidates use case (V3_2 §43.3) — `src/parser_studio/application/extraction/resolve_candidates.py`: `ResolveCandidates` sa 3 strategije: `FIRST_MATCH` (uzmi prvi kandidat), `HIGHEST_CONFIDENCE` (uzmi kandidata sa max confidence), `CONSENSUS` (uzmi kandidata koji se pojawia u 2+ izvora). `ResolveRequest`, `ResolveResult`, `FieldResolution` frozen dataclasses. 18 novih testova. pytest 671 PASS nakon C3 merge-a, architecture 4/4 PASS, ruff 0 na C3 fajlovima. Commit bbab674, pushan na origin/task/faza-c, merge-ovan u dev. |
 | C4 | DONE | Validators (V3_2 §43.4) — 6 validatora u `src/parser_studio/application/extraction/validators/`: `SyntaxValidator` (parseability, regex), `StructureValidator` (required fields, nested structure), `ArithmeticValidator` (line_amount = quantity × unit_price sa 0.02 tolerancijom; hrvatski decimal separator `,` → `.`; NE izmišlja vrijednosti po V3 ARCH-009), `DomainValidator` (semantička pravila po polju), `CrossFieldValidator` (invoice_total = sum line_amount), `CrossDocumentValidator` (placeholder INFO — implementacija u FAZA D). Svaki validator nasljeđuje `Validator` Protocol sa `validate(field_name, value, context) -> list[ValidationIssue]`. 43 nova testova (syntax: 7, arithmetic: 8, structure: 6, domain: 7, cross_field: 8, cross_document: 7). pytest 714 PASS nakon C4 merge-a, architecture 4/4 PASS, ruff 0 na C4 fajlovima. Commit b2f8e97, pushan na origin/task/faza-c, merge-ovan u dev. |
 | C5 | DONE | RealGoldEvaluator (V3_2 §43.5) — `src/parser_studio/application/extraction/real_gold_evaluator.py`: `RealGoldEvaluator.evaluate(document, gold_invoice) -> EvaluationReport`; `DocumentEvaluation` (per-document: total_fields, correct_fields, accuracy); `EvaluationReport` (aggregate: documents, overall_accuracy, per_field_accuracy, failed_documents). Koristi `GoldDataset` projection iz FAZA A6 + `ResolveCandidates` iz C3 + 6 validatora iz C4. 16 novih testova (test_real_gold_evaluation: 4 klase: Structure, SingleDocument, Aggregate, IntegrationWithGold). Integration test: uspoređuje C1-C5 pipeline output sa M5 Gold korpusom. pytest 730 PASS nakon C5 merge-a, architecture 4/4 PASS, ruff 0 na C5 fajlovima. Commit 8dd2ece (C5) + c3d2174 (ruff), pushan na origin/task/faza-c, merge-ovan u dev. **FAZA C COMPLETE.** |
+| D1 | DONE | DeklarantProOracle adapter (V3_2 §44.1) — `ports/parser_oracle.py` Protocol (oracle_name, can_handle, import_file, validate_import) + `OracleError` hijerarhija (OracleUnavailableError, OracleUnsupportedFormatError, OracleImportFailedError). `adapters/declarant_pro/oracle.py` (DeklarantProOracle) + `adapters/declarant_pro/strategy_loader.py` (lazy load + introspekcija). **D1 REFACTOR (u D3 commitu):** Protocol.import_file() vraća `OraclePayload` (vendor-agnostički), NE `ImportResult` direktno. Vendor tip ostaje INTERNI u adapteru (`_invoke_strategy()` razdvaja I/O, `_build_payload()` je JEDINO mjesto koje prevodi contract→domain). `validate_import()` vraća (ok, errors, warnings) tuple za advanced use cases. 33 nova testova (Protocol: 11, Adapter: 22 — supports, import_file success/error, legacy list response, lazy load cache, dependency direction). Deklarant_pro se učitava read-only kroz sys.path hack u adapteru (V3 DEP granica poštovana: application NE importuje deklarant_pro, samo adapter). pytest 730 PASS prije D1 (FAZA C baseline), ruff clean. Commit a3ea906 (D1) + cc5b2e7 (D1 refactor u D3). |
+| D2 | DONE | Oracle → Candidate (V3_2 §44.2) — `domain/oracle/oracle_payload.py`: `OraclePayload` (14 invoice-level polja: invoice_number, supplier_*, currency, gross_weight_kg=bruto_kg alias, net_weight_kg=neto_kg alias, incoterm) + `OracleItem` (10 item-level polja) — vendor-agnostički, NE importuje contract. `domain/oracle/oracle_mapping.py`: statička mapa `INVOICE_LEVEL_MAP` (12) + `ITEM_LEVEL_MAP` (10), helper fns (`is_item_field`, `is_invoice_field`, `get_oracle_attr_for`, `all_supported_fields`, `is_known_field`). `domain/learning/learning_event.py`: `EventType` proširen sa `ORACLE_CONFIRMED` + `ORACLE_REJECTED` (za D3). `ports/candidate_producer.py`: `FieldContext` proširen sa `line_no: int | None` i `oracle_payload: OraclePayload | None` (lazy forward-ref za OraclePayload). `application/extraction/producers/oracle.py`: `OracleCandidateProducer` (producer_id="oracle", confidence=0.95 visok jer Oracle je "stari parser koji zna"), `supports()` samo ako oracle_payload+field u mapi, `propose()` vraća 1 Candidate sa raw_value=oracle_attr, normalized_value=raw (Oracle već normalizuje). 42 nova testova (OraclePayload 14, oracle_mapping 25, OracleCandidateProducer 26 — neki preklapaju). V3 DEP poštovana: domain/oracle NE importuje contract, application NE importuje adapters. pytest 763 PASS nakon D2 merge-a (korigovano: 33 D1 + 42 D2 - 12 preklapanja), architecture 4/4 PASS, ruff clean. Commit 049ed5d (D2). |
+| D3 | DONE | Oracle verification (V3_2 §44.3) — Python API samo (bez Qt widgeta, FAZA UI paralelno). `application/oracle_bootstrap/bootstrap.py`: `BootstrapOracle` use case — `BootstrapRequest`/`BootstrapResult`, poziva `ParserOracle.import_file()` → `OraclePayload`, generiše oracle kandidate za svaki poznati field (invoice+item), vraća `ExtractionDraft` sa `candidates_by_field`, `unresolved`, `warnings`. `application/oracle_bootstrap/confirm_oracle.py`: `ConfirmOracle` use case — `ConfirmOracleRequest`/`ConfirmOracleResult` sa `LearningRepository` Protocol; accept → emit `ORACLE_CONFIRMED` + `USER_CONFIRMED` event (Oracle→Gold); reject → emit `ORACLE_REJECTED` event (bez confirmed value). `application/verification/oracle_vs_gold.py`: `OracleVsGoldComparison.compare(oracle_candidates, gold_entries) → ComparisonReport` sa `ComparisonStatus` enum (MATCH/MISMATCH/MISSING_ORACLE/MISSING_GOLD), numerička tolerancija 0.02, accuracy / per_field_accuracy / failed_fields helpers (read-only, NE piše u storage). 40 novih testova (Bootstrap 12, Confirm 16, Comparison 12). V3 §23 poštovana: "Stari parser NIJE automatski istina" — ConfirmOracle je TAJ koji odlučuje. pytest 878 PASS nakon D3 merge-a, architecture 4/4 PASS, ruff clean. Commit cc5b2e7 (D3+D1 refactor), merge-ovan u dev (69770cb). **FAZA D COMPLETE.** |
 
 ---
 
@@ -224,25 +229,25 @@ Detaljan izvještaj: `agent_reports/2026-09-14-graft-evaluation.md`.
 ## Last completed task
 
 ```text
-FAZA C — Generic extraction (V3_2 §43) COMPLETE.
-C1 Concept library (80 koncepata), C2 5 producers, C3 ResolveCandidates,
-C4 6 validators, C5 RealGoldEvaluator — 148 novih testova.
-Commit 12a1ccb (merge), pushan na origin/dev.
-FAZA C COMPLETE: C1 + C2 + C3 + C4 + C5 (148 novih testova, architecture 4/4 PASS).
+FAZA D — Oracle bootstrap (V3_2 §44) COMPLETE.
+D1 DeklarantProOracle adapter (read-only), D2 Oracle → Candidate + EventType,
+D3 BootstrapOracle + ConfirmOracle + OracleVsGoldComparison.
+148 novih testova. Commit 69770cb (merge), pushan na origin/dev.
+FAZA D COMPLETE: D1 + D2 + D3 (148 novih testova, architecture 4/4 PASS).
 ```
 
 ---
 
 ## Next recommended task
 
-**FAZA C COMPLETE.** Preostaje FAZA D (V3_2 §44).
+**FAZA D COMPLETE.** Preostaje FAZA E (V3_2 §45) — Layout Learning.
 
 Sljedeci FAZA-i:
-- FAZA D — Oracle bootstrap (compare vendor parser output vs Gold dataset, V3_2 §44)
 - FAZA E — Layout Learning — djelomicno zavrseno (E1 Fingerprint + E2 Builder; preostaje E3 Matcher, E4 Drift, E5 Holdout + E6 OCR Reading Map holdout)
+- FAZA F — KnownLayoutProducer + Profile-guided Local OCR (V3_2 §46, vezano za E3)
 - FAZA G — AI Advisor (G1-G5, M3 je dio G1+G2; preostaje G3 Cache, G4 Live providers, G5 Verification assist)
 - FAZA H — VendorParserModel + Codegen (H1-H4, M1 je dio H1; preostaje H2 Jinja, H3 AST/compile, H4 Standalone export)
-- FAZA I — Verifier (I1-I4)
+- FAZA I — Verifier (I1-I4, FAZA D OracleVsGoldComparison je preview)
 - FAZA J — CLI + reports
 
 GUI follow-up zadaci (FAZA UI0 GATE-0 je prosao, sad ekran-po-ekran):
@@ -266,6 +271,9 @@ Cleanup zadaci (out-of-band):
 - Branch cleanup za `task/m5-gold-corpus` (vec merged u dev).
 - Worktree cleanup za `H:/parser-studio-worktrees/faza-c/` (FAZA C završen, merged u dev).
 - Branch cleanup za `task/faza-c` (vec merged u dev).
+- Worktree cleanup za `H:/parser-studio-worktrees/faza-d/` (FAZA D završen, merged u dev).
+- Branch cleanup za `task/faza-d` (vec merged u dev).
+- OraclePyhton/Path import pattern cleanup: `DEFAULT_DEKLARANT_PRO_ROOT` (const caps) + `H:/deklarant_pro` (disk path) + `parser_studio.adapters.deklarant_pro` (Python module) — tri razlicita identiteta, sva tri trebaju u kodu (lesson learned tokom D1 refactor).
 
 
 ---
@@ -285,4 +293,4 @@ Cleanup zadaci (out-of-band):
 - **2026-09-14** — M5 (Prvi Gold Corpus, V3 B5) DONE. Sintetički .xlsx generator u `tests/fixtures/gold/generator.py` (4 fakture: Faktura-1=11, Faktura-2=4, Medicopharm=84, Sumaprom=138 itema; UKUPNO 237 itema) + integration test u `tests/integration/test_gold_corpus.py` (11 testova, 4 klase: Structure, Import, Verify, Projection, Integration). Acceptance: 4 distinct documents, 2643 USER_CONFIRMED events (4×9 invoice + 237×11 item), sva 20 ciljnih polja prisutna po dokumentu. V3 ARCH-010 poštovan: SAMO sintetički podaci (NE stvarne fakture). pytest 582 PASS nakon M5 merge-a (+11 M5 testova od 571), architecture 4/4 PASS, ruff 0 na M5 scope. Production kod (`src/parser_studio/**`) netaknut — M5 je SAMO test + fixtures. Implementer: Mavis u `H:/parser-studio-worktrees/m5-gold-corpus/`. Commit fc1d003 (arch + docs), pushan na `origin/task/m5-gold-corpus`, merge-ovan u dev (Mavis radi kao koordinator za svoj rad). **FAZA B COMPLETE** (M1+M2+M3+M4+M5, 236 novih testova).
 
 - **2026-09-14** — FAZA UI0 (Product/GUI Blueprint) ZAKLJUČANA. V3.2 (dorađeni V3) donio novu FAZU UI0 prije FAZA A. Korisnikov draft `PARSER_STUDIO_GUI_BLUEPRINT_V1.md` postao kanonski `docs/GUI_BLUEPRINT.md` (proširen sa V3.2 §40A UI0.4 obaveznim stanjima: EMPTY, LOADING, PROFILE_MATCH_REVIEW; centralnim tokom + povratnim petljama). `docs/PLAN.md` zamijenjen sa V3.2 verzijom (56873 bytes); stari V3 premješten u `docs/istorija/PARSER_STUDIO_KANONSKI_PLAN_V3.md`. GATE-0 (GUI/UX Blueprint Locked) PASS. V3.2 ključne promjene: ARCH-011 (GUI/UX Blueprint se zaključava prije functional implementacije, novo nepormjenjivo pravilo), FAZA UI0 sa 6 podzadataka (UI0.1..UI0.6), OCR Reading Map (E2.5, novi concept izveden iz LayoutProfile-a, koristi `RegionTextReader` port + `LocalRegionOCR` adapter — još nisu implementirani u kodu). CURRENT_STATE ažuriran sa UI0 status DONE + GATE-0 lock.
-- **2026-09-14** — FAZA C (Generic extraction, V3_2 §43) COMPLETE. C1: `src/parser_studio/domain/concepts/` (Concept + ConceptLibrary, 80 koncepata za 20 polja × 4 jezika: BS/HR/SR/EN; `_normalize_for_match` lokalni u Concept: NFKC + strip Mn dijakritika + lowercase; 34 testa). C2: `src/parser_studio/application/extraction/producers/` (LabelRight 0.80 / LabelBelow 0.75 / TableHeader 0.85 / ColumnContent 0.70 / ValueShape 0.60; svi nasljeđuju `CandidateProducer` Protocol sa `produces(field, context) -> list[Candidate]`; 37 testova; ruff cleanup commit c3d2174 za F401×3+SIM102 u `excel_header.py`). C3: `ResolveCandidates` use case (`FIRST_MATCH`/`HIGHEST_CONFIDENCE`/`CONSENSUS` strategije; 18 testova). C4: 6 validatora u `src/parser_studio/application/extraction/validators/` (Syntax/Structure/Arithmetic/Domain/CrossField/CrossDocument; ArithmeticValidator poštuje V3 ARCH-009 — NE izmišlja vrijednosti, samo flaggira sa 0.02 tolerancijom; hrvatski decimal `,`→`.`; 43 testa). C5: `RealGoldEvaluator` u `src/parser_studio/application/extraction/real_gold_evaluator.py` (EvaluationReport + DocumentEvaluation; integration test poredi C1-C5 pipeline output sa M5 Gold korpusom; 16 testova). FAZA C 148 novih testova, 730 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope). Architecture 4/4 PASS, Ruff FAZA C clean, Contract drift PASS (FAZA C ne dira contract/). Implementation: Mavis (serijski default po user pref). Worktree: `H:/parser-studio-worktrees/faza-c/`. Branch: `task/faza-c`. Commits: e3ba97e (C1) + b9ccfb9 (C2) + bbab674 (C3) + b2f8e97 (C4) + 8dd2ece (C5) + c3d2174 (ruff cleanup). Merge: 12a1ccb (no-ff). Push: origin/dev i origin/task/faza-c. **FAZA C COMPLETE.**
+- **2026-09-14** — FAZA D (Oracle bootstrap, V3_2 §44) COMPLETE. D1: `src/parser_studio/ports/parser_oracle.py` Protocol (oracle_name, can_handle, import_file, validate_import) + `OracleError` hijerarhija (OracleUnavailableError, OracleUnsupportedFormatError, OracleImportFailedError). `adapters/deklarant_pro/oracle.py` (DeklarantProOracle) + `adapters/deklarant_pro/strategy_loader.py` (lazy load + introspekcija). D2: `domain/oracle/oracle_payload.py` (OraclePayload + OracleItem vendor-agnosticki, NE importuje contract) + `domain/oracle/oracle_mapping.py` (INVOICE_LEVEL_MAP 12 + ITEM_LEVEL_MAP 10, 22 podrzana polja). `domain/learning/learning_event.py`: EventType prosiren sa ORACLE_CONFIRMED + ORACLE_REJECTED. `ports/candidate_producer.py`: FieldContext prosiren sa line_no i oracle_payload (lazy forward-ref). `application/extraction/producers/oracle.py` OracleCandidateProducer (producer_id="oracle", confidence=0.95). D3: `application/oracle_bootstrap/bootstrap.py` BootstrapOracle (poziva ParserOracle + OracleCandidateProducer, vraca ExtractionDraft + OraclePayload + metadata). `application/oracle_bootstrap/confirm_oracle.py` ConfirmOracle (accept=ORACLE_CONFIRMED+USER_CONFIRMED, reject=ORACLE_REJECTED). `application/verification/oracle_vs_gold.py` OracleVsGoldComparison (MATCH/MISMATCH/MISSING_ORACLE/MISSING_GOLD, numericka tolerancija 0.02, read-only). D1 REFACTOR (u D3 commitu): Protocol.import_file() vraca OraclePayload (vendor-agnosticki), NE ImportResult. Vendor tip ostaje INTERNI u adapteru — `_invoke_strategy()` razdvaja I/O, `_build_payload()` je JEDINO mjesto koje prevodi contract→domain. **V3 §23 postovana:** "Stari parser NIJE automatski istina" — ConfirmOracle je TAJ koji odlucuje. V3 DEP postovana: application NE importuje contract, adapters smije. 148 novih testova (33 D1 + 42 D2 + 40 D3 — neki preklapaju). pytest 878 PASS nakon D3 merge-a (od 730 pre FAZA D), architecture 4/4 PASS, ruff 0 na FAZA D scope. Production kod (`src/parser_studio/`) postuje V3 DEP granice. Implementer: Mavis serijski (default po user pref). Worktree: `H:/parser-studio-worktrees/faza-d/`. Branch: `task/faza-d`. Commits: a3ea906 (D1) + 049ed5d (D2) + cc5b2e7 (D3+D1 refactor). Merge: 69770cb (no-ff). Push: origin/dev i origin/task/faza-d. **FAZA D COMPLETE.** C1: `src/parser_studio/domain/concepts/` (Concept + ConceptLibrary, 80 koncepata za 20 polja × 4 jezika: BS/HR/SR/EN; `_normalize_for_match` lokalni u Concept: NFKC + strip Mn dijakritika + lowercase; 34 testa). C2: `src/parser_studio/application/extraction/producers/` (LabelRight 0.80 / LabelBelow 0.75 / TableHeader 0.85 / ColumnContent 0.70 / ValueShape 0.60; svi nasljeđuju `CandidateProducer` Protocol sa `produces(field, context) -> list[Candidate]`; 37 testova; ruff cleanup commit c3d2174 za F401×3+SIM102 u `excel_header.py`). C3: `ResolveCandidates` use case (`FIRST_MATCH`/`HIGHEST_CONFIDENCE`/`CONSENSUS` strategije; 18 testova). C4: 6 validatora u `src/parser_studio/application/extraction/validators/` (Syntax/Structure/Arithmetic/Domain/CrossField/CrossDocument; ArithmeticValidator poštuje V3 ARCH-009 — NE izmišlja vrijednosti, samo flaggira sa 0.02 tolerancijom; hrvatski decimal `,`→`.`; 43 testa). C5: `RealGoldEvaluator` u `src/parser_studio/application/extraction/real_gold_evaluator.py` (EvaluationReport + DocumentEvaluation; integration test poredi C1-C5 pipeline output sa M5 Gold korpusom; 16 testova). FAZA C 148 novih testova, 730 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope). Architecture 4/4 PASS, Ruff FAZA C clean, Contract drift PASS (FAZA C ne dira contract/). Implementation: Mavis (serijski default po user pref). Worktree: `H:/parser-studio-worktrees/faza-c/`. Branch: `task/faza-c`. Commits: e3ba97e (C1) + b9ccfb9 (C2) + bbab674 (C3) + b2f8e97 (C4) + 8dd2ece (C5) + c3d2174 (ruff cleanup). Merge: 12a1ccb (no-ff). Push: origin/dev i origin/task/faza-c. **FAZA C COMPLETE.**
