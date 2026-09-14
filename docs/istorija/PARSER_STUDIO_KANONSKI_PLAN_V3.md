@@ -2,9 +2,8 @@
 title: "Parser Studio — kanonski plan realizacije"
 description: "Jedini važeći plan za nastavak razvoja Parser Studija: Modular Monolith + Hexagonal Architecture + MVVM + Evidence-first Learning, sa Gold Ground Truthom, automatskim layout profilima, determinističkim codegenom i verifikacijom generisanog parsera."
 project: "Parser Studio"
-version: "3.2"
+version: "3.0"
 date: "2026-09-14"
-revision_note: "v3.2 uvodi GUI/UX Blueprint Gate prije funkcionalne implementacije; zadržava OCR Reading Map, profile-guided local OCR i schema-assisted AI region recovery."
 status: "CANONICAL / JEDINI VAŽEĆI PLAN"
 source_repo: "https://github.com/Rade69/parser_studio"
 supersedes:
@@ -15,7 +14,7 @@ supersedes:
   - "PLAN.md v2"
 ---
 
-# Parser Studio — kanonski plan realizacije v3.2
+# Parser Studio — kanonski plan realizacije v3
 
 ## 0. Status ovog dokumenta
 
@@ -76,15 +75,9 @@ Layout Fingerprint
         ↓
 Automatic Layout Profile
         ↓
-OCR Reading Map
-        ↓
-Profile-guided Local OCR
-        ↓
 Learned Extraction
         ↓
-Deterministički OCR Recovery po potrebi
-        ↓
-Opcionalni Schema-assisted AI Region Recovery
+OCR Recovery po potrebi
         ↓
 VendorParserModel
         ↓
@@ -315,46 +308,6 @@ Nikad u Git:
 
 ---
 
-## ARCH-011 — GUI/UX Blueprint se zaključava prije funkcionalne implementacije
-
-Parser Studio se ne gradi ekran-po-ekran bez unaprijed definisane cjeline proizvoda.
-
-Prije A1+ arhitektonske i funkcionalne implementacije mora postojati **kompletan GUI/UX Blueprint** koji pokazuje:
-
-```text
-application shell
-glavnu navigaciju
-sve glavne ekrane
-ključne modale/dijaloge
-prazna/loading/error/review stanja
-glavne korisničke akcije
-odnose između ekrana
-```
-
-Cilj nije pixel-perfect produkcijski UI prije backenda.
-
-Cilj je unaprijed definisati **mentalni model aplikacije** tako da tokom implementacije bude jasno:
-
-```text
-šta korisnik vidi
-šta korisnik pokreće
-koji ViewModel pripada ekranu
-koji Application Use Case se ožičava
-koji Domain/Port podržava taj tok
-```
-
-Kanonski UI blueprint živi u:
-
-```text
-docs/GUI_BLUEPRINT.md
-```
-
-Promjena osnovne navigacije ili odgovornosti glavnog ekrana nakon `GATE-0` zahtijeva eksplicitnu odluku Human Ownera i ažuriranje blueprinta.
-
-GUI blueprint ne smije probiti Hexagonal/MVVM granice. On opisuje presentation i korisničke tokove; business logika ostaje u application/domain slojevima.
-
----
-
 # 4. Ciljnih 20 poslovnih podataka
 
 Ovo je zaključan poslovni scope ekstrakcije.
@@ -463,7 +416,6 @@ parser_studio/
 │       │   ├── profiles/
 │       │   │   ├── models.py
 │       │   │   ├── fingerprint.py
-│       │   │   ├── ocr_reading_map.py
 │       │   │   └── rules.py
 │       │   │
 │       │   └── parser_model/
@@ -474,7 +426,6 @@ parser_studio/
 │       │   ├── extraction/
 │       │   │   ├── analyze_invoice.py
 │       │   │   ├── resolver.py
-│       │   │   ├── profile_guided_ocr.py
 │       │   │   ├── validators/
 │       │   │   └── producers/
 │       │   │
@@ -492,7 +443,6 @@ parser_studio/
 │       │
 │       ├── ports/
 │       │   ├── document_reader.py
-│       │   ├── region_text_reader.py
 │       │   ├── candidate_producer.py
 │       │   ├── learning_repository.py
 │       │   ├── advisor.py
@@ -505,9 +455,6 @@ parser_studio/
 │       │   │   ├── excel_reader.py
 │       │   │   ├── docling_reader.py
 │       │   │   └── rasterizer.py
-│       │   │
-│       │   ├── ocr/
-│       │   │   └── local_region_ocr.py
 │       │   │
 │       │   ├── persistence/
 │       │   │   └── sqlite/
@@ -548,7 +495,6 @@ parser_studio/
 │
 ├── docs/
 │   ├── PLAN.md
-│   ├── GUI_BLUEPRINT.md
 │   └── istorija/
 │
 └── pyproject.toml
@@ -1282,7 +1228,6 @@ cross-field validations
 header/footer regions
 known optional fields
 document-scope rules
-OCR Reading Map
 ```
 
 Primjer:
@@ -1297,59 +1242,6 @@ quantity:
 ```
 
 Korisnik ne uređuje profil.
-
-## 25.1 OCR Reading Map
-
-`OCR Reading Map` je izvedeni dio `LayoutProfile`-a koji opisuje **kako i gdje čitati poznati layout**, a ne samo kako ga klasifikovati.
-
-Ne čuva samo apsolutne piksele. Prioritet imaju:
-
-```text
-semantic anchor
-spatial relation
-normalized region
-table role
-relative column position
-expected data type
-value shape
-neighbour relations
-validation rules
-page scope
-```
-
-Primjer invoice polja:
-
-```text
-invoice_number:
-  anchor: "Invoice No"
-  relation: RIGHT_NEAR
-  expected_region: [0.63, 0.05, 0.91, 0.12]
-  expected_type: string
-  page_scope: FIRST_PAGE
-  neighbour_below: invoice_date
-```
-
-Primjer item kolone:
-
-```text
-amount:
-  source: ITEM_TABLE
-  semantic_column: AMOUNT
-  relative_x: 0.82
-  expected_type: decimal
-  validation: quantity * unit_price ~= amount
-```
-
-Mapa se izvodi iz više `USER_VERIFIED` primjera istog layouta i mora biti regenerabilna zajedno sa profilom.
-
-AI smije predložiti anchor, region ili semantic role, ali AI prijedlog ne postaje profil pravilo samo zato što ga je model predložio. Mora biti:
-
-1. povezan sa postojećim `USER_VERIFIED` evidence/locator podacima;
-2. potvrđen na više training dokumenata istog layouta;
-3. proći determinističke consistency provjere;
-4. verzionisan kao dio Layout Profile-a.
-
-`OCR Reading Map` ne mijenja Gold Ground Truth.
 
 ---
 
@@ -1383,91 +1275,30 @@ Novi layout ne prepisuje stari.
 Za poznati layout:
 
 ```text
-layout match
-    ↓
-OCR Reading Map
-    ↓
-profile-guided local OCR
-    ↓
 generic Candidates
 +
 profile-guided Candidates
-    ↓
+        ↓
 Resolver
 ```
-
-Kod skenirane fakture cilj nije svaki put tretirati cijelu stranicu kao potpuno nepoznat dokument.
-
-Ako je layout poznat, sistem unaprijed zna:
-
-```text
-koji region treba čitati
-koje polje očekuje
-koji tip vrijednosti očekuje
-koji anchor treba biti u blizini
-koja je semantic role kolone
-koje validacije moraju važiti
-```
-
-Lokalni OCR zato može raditi ciljano nad poznatim regionima umjesto da svaki put ponavlja jednako široko whole-page čitanje.
 
 Cilj:
 
 - manje unresolved vrijednosti,
 - bolja lokalizacija OCR greške,
 - stabilnija ekstrakcija,
-- niži trošak recovery-a,
 - bez rasta false-positive rezultata.
 
 ---
 
-# 28. Profile-guided Local OCR i OCR Recovery
+# 28. OCR Recovery
 
-## 28.1 Region OCR port
+Aktivira se kada:
 
-Targeted lokalno čitanje ide iza porta:
-
-```text
-RegionTextReader
-```
-
-Konkretan lokalni OCR engine je adapter i nije dio domain-a.
-
-Ovo **ne mijenja odluku da je Docling jedini primarni PDF document engine**. Region OCR je recovery/reading mehanizam za poznati bbox, ne drugi primarni document pipeline.
-
-## 28.2 Profile-guided Local OCR
-
-Za poznati layout:
-
-```text
-originalni PDF
-    ↓
-Layout Profile + OCR Reading Map
-    ↓
-poznati page/region/column
-    ↓
-high-res render
-    ↓
-crop samo ciljanog regiona
-    ↓
-lokalni RegionTextReader
-    ↓
-Candidate
-    ↓
-validation
-```
-
-Whole-page čitanje i dalje može služiti layout matchingu i generic extractionu, ali poznati region treba čitati ciljano kada to povećava pouzdanost ili smanjuje trošak.
-
-## 28.3 Deterministički OCR Recovery trigger
-
-Recovery se aktivira kada:
-
-- zna se semantička uloga;
-- postoji bbox ili region koji profil može izvesti;
-- OCR vrijednost je sumnjiva/nevalidna;
-- status je `FAILED` ili `AMBIGUOUS`;
-- ili generic read i profile-guided read daju konflikt.
+- zna se semantička uloga,
+- postoji bbox,
+- OCR vrijednost je sumnjiva/nevalidna,
+- status je `FAILED` ili `AMBIGUOUS`.
 
 Tok:
 
@@ -1476,9 +1307,9 @@ originalni PDF
     ↓
 high-res page render
     ↓
-profile-guided crop
+crop bbox
     ↓
-targeted local reread
+targeted reread
     ↓
 Candidate
     ↓
@@ -1491,7 +1322,7 @@ Ne smije sama izmisliti novu pravno značajnu vrijednost.
 
 ---
 
-# 29. AI Advisor — dvije uloge
+# 29. AI Advisor
 
 Port:
 
@@ -1534,78 +1365,11 @@ Kod postavlja:
 ai_assisted=True
 ```
 
-AI u Parser Studiju ima dvije dozvoljene uloge.
-
-## 29.1 AI Teacher / Profile Enrichment
-
-Nakon što postoje:
-
-```text
-Gold Ground Truth
-Layout grouping
-Locator / bbox evidence
-```
-
-AI Vision može analizirati više potvrđenih faktura istog layouta i predložiti:
-
-```text
-stable anchors
-field regions
-anchor → field relations
-table boundaries
-semantic column roles
-neighbour relations
-optional regions
-```
-
-Tipični training set za jedan layout:
-
-```text
-3–5 USER_VERIFIED faktura istog layouta
-```
-
-AI prijedlog se koristi kao ubrzanje izgradnje `OCR Reading Map`-a, ne kao novi izvor istine.
-
-Sistem prihvata AI-proposed map rule samo ako ga može povezati sa postojećim Gold evidence lokatorima i potvrditi kroz više training dokumenata.
-
-## 29.2 Schema-assisted AI Region Recovery
-
-Ako lokalni profile-guided OCR i deterministički recovery i dalje završe u `FAILED` ili `AMBIGUOUS`, AI se može pozvati nad **uskim regionom**, zajedno sa poznatom šemom layouta.
-
-AI payload treba da bude minimalan i ciljano strukturiran:
-
-```text
-layout_id + layout_version
-target_field
-page + bbox
-rendered crop
-crop hash
-expected semantic role
-expected data type
-nearby anchors / neighbours
-local OCR candidates
-validation issues
-```
-
-Ne slati cijeli dokument ako je dovoljan mali region.
-
-Instrukcija modelu mora biti:
-
-> Pročitaj vizuelno ono što je stvarno u označenom regionu. Ne izračunavaj i ne izmišljaj vrijednost koja nije vidljiva.
-
-Aritmetika i susjedna polja mogu objasniti zašto je lokalni rezultat sumnjiv, ali model ne smije dobiti "očekivani odgovor" koji bi ga naveo da samo potvrdi računsku pretpostavku.
-
 ---
 
 # 30. Grounding gate
 
 AI kandidat mora biti potvrdiv u dokumentu.
-
-Grounding ima dva eksplicitna režima.
-
-## 30.1 `GroundingMode.TEXT`
-
-Koristi se kada se AI vrijednost mora vezati za tekst koji već postoji u strukturisanom document evidence-u.
 
 Dozvoljena minimalna normalizacija:
 
@@ -1615,35 +1379,9 @@ collapsed whitespace
 case-insensitive
 ```
 
-Bez fuzzy groundinga za pravno značajne vrijednosti.
+Bez fuzzy grounding-a.
 
-Ako se normalizovana AI vrijednost ne može povezati sa konkretnim izvornim tekstom na locatoru, kandidat se odbacuje.
-
-## 30.2 `GroundingMode.VISION_REGION`
-
-Koristi se za skenirane/teške regione gdje AI čita direktno iz slike i njegov rezultat može biti različit od lokalnog OCR teksta.
-
-Obavezno čuvati:
-
-```text
-page
-bbox
-rendered crop hash
-layout_id
-layout_version
-prompt_id
-model_id
-raw AI response
-```
-
-`VISION_REGION` kandidat:
-
-- ostaje `AI_PROPOSED`;
-- nikada automatski ne mijenja Gold Ground Truth;
-- ne postaje automatski `FOUND` samo zato što se uklapa u aritmetiku;
-- zahtijeva korisničku potvrdu prije nego postane `USER_VERIFIED`, osim ako budući kanonski plan eksplicitno uvede stroži deterministički acceptance gate.
-
-Odbačeni AI kandidati se loguju.
+Odbačeni kandidat se loguje.
 
 ---
 
@@ -1874,118 +1612,6 @@ jinja2
 `cryptography` ukloniti ili premjestiti u optional `signing` dok potpisivanje nije implementirano.
 
 Docling dodati kada se implementira Docling adapter.
-
----
-
-# 40A. FAZA UI0 — Product / GUI Blueprint
-
-Ova faza se radi **ODMAH**, prije A1+ implementacije.
-
-Ona ne znači da se odmah pravi kompletan funkcionalan PySide6 GUI.
-
-Cilj je da prije ožičavanja sistema postoji kompletna vizuelna i funkcionalna mapa aplikacije.
-
-## UI0.1 — Application shell i navigacija
-
-Definisati zajednički shell:
-
-```text
-Parser Studio
-├── Početna
-├── Dokumenti
-├── Review
-├── Gold Dataset
-├── Layout Profili
-├── Parser Build
-├── Verifikacija
-├── Export
-└── Settings / AI / Storage
-```
-
-Definisati left navigation, top bar, globalni status aktivnog vendora/layouta/dokumenta, globalni AI mode indikator i zajedničke loading/empty/error obrasce.
-
-## UI0.2 — Nacrtati sve glavne ekrane
-
-Obavezni blueprint za:
-
-```text
-UI-01  Početna / Dashboard
-UI-02  Dokumenti / Import & Library
-UI-03  Review Workspace
-UI-04  Gold Dataset
-UI-05  Layout Profile / OCR Reading Map
-UI-06  Parser Build
-UI-07  Verification
-UI-08  Export
-UI-09  Settings / AI / Local Storage
-```
-
-Za svaki ekran definisati svrhu, primarni korisnički cilj, glavne sekcije, glavne akcije, ključne statuse i navigaciju ka drugim ekranima.
-
-## UI0.3 — Ključni modali/dijalozi
-
-Minimalno:
-
-```text
-Import Documents
-Assign / Confirm Vendor & Layout
-Edit / Confirm Field
-Resolve Ambiguous Candidate
-AI Region Recovery Review
-Layout Version / Drift Review
-Build Details
-Verification Diff
-Export Confirmation
-```
-
-## UI0.4 — Obavezna stanja
-
-Blueprint mora pokriti:
-
-```text
-EMPTY
-LOADING
-ANALYZING
-FOUND
-NOT_PRESENT
-AMBIGUOUS
-FAILED
-USER_CORRECTED
-USER_VERIFIED
-PROFILE_MATCH_HIGH
-PROFILE_MATCH_REVIEW
-PROFILE_NO_MATCH
-BUILD_READY
-BUILD_FAILED
-VERIFICATION_PASS
-VERIFICATION_FAIL
-EXPORT_BLOCKED
-```
-
-## UI0.5 — Kanonski artifact
-
-Kreirati i održavati:
-
-```text
-docs/GUI_BLUEPRINT.md
-```
-
-Blueprint je presentation/product ugovor. Ne sadrži business logiku i nije zamjena za domain/application arhitekturu.
-
-## UI0.6 — Acceptance
-
-`UI0` je završen kada:
-
-- svih 9 glavnih ekrana imaju nacrt;
-- navigacija između njih je jasna;
-- ključni modali su definisani;
-- glavna stanja su pokrivena;
-- Review workspace pokazuje original + evidence/bbox + 20 polja + item tabelu;
-- Layout Profile ekran pokazuje Fingerprint + OCR Reading Map + profile verziju;
-- Parser Build ekran pokazuje šta ulazi u `VendorParserModel`;
-- Verification ekran jasno odvaja positive Gold testove od negative `detect_*` testova;
-- Export je vizuelno blokiran dok verification gate nije PASS;
-- Human Owner može iz blueprinta objasniti šta svaki glavni dio aplikacije radi bez čitanja source koda.
 
 ---
 
@@ -2388,29 +2014,7 @@ Gold primjeri → LayoutProfile.
 
 ---
 
-## E3 — OCR Reading Map
-
-Iz više `USER_VERIFIED` dokumenata istog layouta izvesti:
-
-```text
-stable anchors
-normalized field regions
-anchor → field relations
-item-table region
-semantic column roles
-relative column positions
-expected value types
-neighbour relations
-page scope
-```
-
-Reading Map je dio `LayoutProfile`-a i mora biti regenerabilan iz Gold evidence-a.
-
-Ne uvoditi AI kao uslov za ovu fazu. Osnovna mapa mora moći nastati deterministički iz potvrđenih lokatora. AI je kasniji opcionalni teacher/enrichment sloj.
-
----
-
-## E4 — Profile Matcher
+## E3 — Profile Matcher
 
 Rezultat:
 
@@ -2422,35 +2026,33 @@ NO_MATCH
 
 ---
 
-## E5 — Drift
+## E4 — Drift
 
 Novi layout iste firme dobija novu verziju.
 
 ---
 
-## E6 — Holdout dokaz
+## E5 — Holdout dokaz
 
 Obavezni eksperiment:
 
 ```text
 F1 + F2
    ↓
-Pekabesko profile + OCR Reading Map
+Pekabesko profile
    ↓
 treća faktura istog layouta
 ```
 
-Porediti najmanje:
+Porediti:
 
 ```text
 generic-only
 vs
-profile-guided extraction
-vs
-profile-guided local OCR za skenirani/teški region
+profile-guided
 ```
 
-Profil se smatra korisnim samo ako poboljšava kvalitet ili lokalizaciju problema bez rasta false-positive rezultata.
+Profil se smatra korisnim samo ako poboljšava kvalitet bez rasta false-positive rezultata.
 
 ---
 
@@ -2464,51 +2066,29 @@ LayoutProfile daje profile-guided Candidates.
 
 ---
 
-## F2 — Profile-guided Local OCR
+## F2 — Combined resolver
 
-Implementirati:
-
-```text
-OCR Reading Map
-    ↓
-page/region selection
-    ↓
-high-res crop
-    ↓
-RegionTextReader
-    ↓
-Candidate
-```
-
-Lokalni OCR engine ostaje adapter iza `RegionTextReader` porta.
+Generic + learned Candidates.
 
 ---
 
-## F3 — Combined resolver
+## F3 — OCR Recovery trigger
 
-Generic + learned + profile-guided OCR Candidates.
-
----
-
-## F4 — OCR Recovery trigger
-
-Samo kada postoji jasan field/region kontekst i kada primarno/guided čitanje nije dovoljno.
+Samo kada postoji jasan field/region kontekst.
 
 ---
 
-## F5 — Targeted local reread
+## F4 — Targeted reread
 
-BBox/derived region → high-res crop → local reread → Candidate → validation.
+BBox → crop → reread → Candidate → validation.
 
 ---
 
-## F6 — Recovery metrics
+## F5 — Recovery metrics
 
 Pratiti:
 
 ```text
-profile_guided_reads
-local_region_reads
 recovery_attempts
 recovered_correctly
 still_failed
@@ -2517,7 +2097,7 @@ wrong_recovery
 
 ---
 
-# 47. FAZA G — AI Teacher i AI Recovery
+# 47. FAZA G — AI Advisor
 
 AI dolazi tek kada postoje:
 
@@ -2528,8 +2108,6 @@ Evidence
 Review
 Ground Truth
 LearningRepository
-LayoutProfile
-OCR Reading Map
 ```
 
 ---
@@ -2550,68 +2128,15 @@ Provider iza transport apstrakcije.
 
 ---
 
-## G4 — AI Teacher / Map Enrichment
+## G4 — Grounding
 
-Na 3–5 `USER_VERIFIED` faktura istog layouta AI može predložiti precizniju mapu:
-
-```text
-anchors
-field regions
-table boundaries
-semantic columns
-neighbour relations
-```
-
-AI prijedlog se prihvata u profil samo ako se može deterministički povezati sa Gold evidence/locator podacima i potvrditi kroz više dokumenata.
-
-Profil dobija novu verziju samo ako enrichment donosi funkcionalnu promjenu.
+Halucinirani kandidati padaju.
 
 ---
 
-## G5 — Schema-assisted AI Region Recovery
-
-Ako F faza ostavi polje `FAILED` ili `AMBIGUOUS`:
-
-```text
-target crop
-+
-OCR Reading Map schema
-+
-field semantics
-+
-local OCR candidates
-+
-validation issues
-        ↓
-AI Vision
-        ↓
-AI_PROPOSED Candidate
-```
-
-AI ne dobija zadatak da rekonstruiše cijelu fakturu ako je problem lokalizovan na jedan region.
-
----
-
-## G6 — Grounding modes
-
-Implementirati i testirati:
-
-```text
-TEXT
-VISION_REGION
-```
-
-Halucinirani ili negrounded kandidati padaju.
-
-`VISION_REGION` ostaje `AI_PROPOSED` dok ga korisnik ne potvrdi.
-
----
-
-## G7 — Cache
+## G5 — Cache
 
 `cache-only` mora reprodukovati snimljeni rezultat.
-
-Cache key mora obuhvatiti i crop/payload hash kada se koristi region recovery.
 
 ---
 
@@ -2737,8 +2262,6 @@ ML nikad ne mijenja Gold Ground Truth.
 # 52. Redoslijed realizacije
 
 ```text
-UI0 Product / GUI Blueprint — URADITI ODMAH
- ↓
 A0  Baseline
  ↓
 A1  src package layout
@@ -2769,11 +2292,11 @@ C1-C5 Generic extraction + resolver + real evaluation
  ↓
 D1-D3 Oracle bootstrap
  ↓
-E1-E6 Layout learning + OCR Reading Map
+E1-E5 Layout learning
  ↓
-F1-F6 Profile-guided local OCR + learned extraction + deterministic recovery
+F1-F5 Learned extraction + OCR recovery
  ↓
-G1-G7 AI Teacher + schema-assisted AI region recovery
+G1-G5 AI advisor
  ↓
 H1-H4 VendorParserModel + codegen
  ↓
@@ -2788,22 +2311,6 @@ ML eksperimenti
 ---
 
 # 53. Glavni razvojni gate-ovi
-
-## GATE-0 — GUI/UX Blueprint Locked
-
-Mora biti završen:
-
-```text
-UI0
-```
-
-prije A1+ implementacije.
-
-A0 baseline se može izvršiti kao tehnička sigurnosna provjera, ali ne treba započinjati ozbiljno ožičavanje presentation/application funkcija prije nego Human Owner prihvati osnovni GUI/UX Blueprint.
-
-`GATE-0` ne zaključava boje, fontove i finalni polish. Zaključava glavnu information architecture, glavne ekrane, odgovornost ekrana, osnovne korisničke tokove i ključna stanja/gate-ove.
-
----
 
 ## GATE-1 — Architecture Locked
 
@@ -2843,7 +2350,7 @@ prije ocjenjivanja "tačnosti" novog sistema.
 
 ## GATE-4 — Layout Learning Proven
 
-Mora biti dokazano holdout testom iz E6, uključujući provjeru koristi `OCR Reading Map`-a na poznatom layoutu.
+Mora biti dokazano holdout testom iz E5.
 
 ---
 
@@ -2891,17 +2398,6 @@ profile version changes
 generic vs profile-guided delta
 ```
 
-## OCR Reading Map / Profile-guided OCR
-
-```text
-reading_map_field_coverage
-profile_guided_reads
-local_region_reads
-profile_guided_correct
-profile_guided_wrong
-profile_guided_unresolved
-```
-
 ## OCR Recovery
 
 ```text
@@ -2909,10 +2405,6 @@ attempts
 correct recoveries
 wrong recoveries
 still unresolved
-ai_region_recovery_attempts
-ai_region_recovery_correct
-ai_region_recovery_wrong
-ai_region_recovery_user_confirmed
 ```
 
 ## Generated parser
@@ -2948,7 +2440,6 @@ runtime
 18. Ne održavati paralelno staru `core/services/views` i novu arhitekturu duže nego što migration zahtijeva.
 19. Svaki compatibility shim mora imati plan uklanjanja.
 20. Export bez verification gate-a ne postoji.
-21. Ne dodavati novi glavni ekran ili mijenjati odgovornost postojećeg ekrana bez ažuriranja `docs/GUI_BLUEPRINT.md`.
 
 ---
 
@@ -2964,7 +2455,7 @@ Do GATE-3 ne raditi:
 - plugin signing,
 - skaliranje na mnogo novih vendora,
 - performance optimizacije koje komplikuju correctness,
-- veliki UI polishing (GUI/UX Blueprint se ipak radi odmah u UI0).
+- veliki UI polishing.
 
 ---
 
@@ -3029,23 +2520,7 @@ cli/
 
 **Ne počinjati Doclingom.**
 
-Prvi aktivni zadatak od v3.2 je:
-
-```text
-UI0 — Product / GUI Blueprint
-```
-
-Napraviti i Human Owneru pokazati:
-
-```text
-docs/GUI_BLUEPRINT.md
-```
-
-sa kompletnim application shellom, svih 9 glavnih ekrana, ključnim modalima i glavnim UI stanjima.
-
-Ne čekati B4 da bi se tek tada odlučivalo kako aplikacija izgleda. `B4 Review workspace` ostaje faza u kojoj se Review GUI funkcionalno implementira i ožičava; UI0 unaprijed definiše kako cijeli proizvod izgleda i kako se dijelovi povezuju.
-
-Tek nakon prihvaćenog UI0 slijedi:
+Prvi paket je:
 
 ```text
 A0 + A1 + A2
@@ -3068,7 +2543,7 @@ odnosno:
 4. Excel adapter,
 5. `CandidateProducer` umjesto `Engine`.
 
-To je prvi stvarni arhitektonski gate poslije GUI/UX Blueprint Gate-a.
+To je prvi stvarni arhitektonski gate.
 
 ---
 
@@ -3081,16 +2556,14 @@ Parser Studio je uspješan kada:
 3. korisnik ne programira parser;
 4. sistem uči layout iz potvrđenih primjera;
 5. known-layout extraction poboljšava novi dokument;
-6. `OCR Reading Map` omogućava ciljano lokalno čitanje poznatih regiona;
-7. OCR failure može lokalizovati i prvo pokušati deterministički region recovery;
-8. AI može služiti kao teacher i kao uski region fallback bez postajanja izvora istine;
-9. korisničke korekcije ostaju trajno znanje;
-10. AI je opcionalan, grounded i auditovan;
-11. generisani `.py` nema Parser Studio runtime dependency;
-12. generisani parser prolazi sve pozitivne Gold testove;
-13. `detect_*` ne presreće druge vendore;
-14. isti input + ista verzija sistema daju reproducibilan rezultat;
-15. novi vendor parser nastaje znatno brže nego ručnim programiranjem bez povećanja rizika.
+6. OCR failure može lokalizovati;
+7. korisničke korekcije ostaju trajno znanje;
+8. AI je opcionalan, grounded i auditovan;
+9. generisani `.py` nema Parser Studio runtime dependency;
+10. generisani parser prolazi sve pozitivne Gold testove;
+11. `detect_*` ne presreće druge vendore;
+12. isti input + ista verzija sistema daju reproducibilan rezultat;
+13. novi vendor parser nastaje znatno brže nego ručnim programiranjem bez povećanja rizika.
 
 ---
 
@@ -3106,7 +2579,7 @@ Parser Studio je uspješan kada:
               ┌───────────▼────────────┐
               │ Use Cases              │
               │ Resolver / Validators  │
-              │ Profile/OCR workflows  │
+              │ Profile workflows      │
               └───────────┬────────────┘
                           │
                         PORTS
@@ -3117,7 +2590,7 @@ DocumentReader    LearningRepository      Advisor
        │                  │                   │
        ▼                  ▼                   ▼
     ADAPTERS           ADAPTERS            ADAPTERS
- Docling/Excel/OCR      SQLite                AI
+ Docling/Excel          SQLite                AI
        │
        └──────────────┐
                       │
@@ -3128,7 +2601,7 @@ DocumentReader    LearningRepository      Advisor
        │ Candidate                           │
        │ Learning Events                     │
        │ Gold State                          │
-       │ Layout Profile + OCR Reading Map    │
+       │ Layout Profile                      │
        │ VendorParserModel                   │
        └─────────────────────────────────────┘
                       │
@@ -3159,4 +2632,4 @@ Centralna vrijednost je:
 
 > **provjerljivo, trajno i regenerabilno znanje o stvarnim dokumentima.**
 
-Sve ostalo — Docling, heuristike, `OCR Reading Map`, lokalni OCR, AI teacher/recovery, layout profili, codegen i budući ML — jesu zamjenjivi mehanizmi oko tog znanja.
+Sve ostalo — Docling, heuristike, AI, layout profili, OCR recovery, codegen i budući ML — jesu zamjenjivi mehanizmi oko tog znanja.
