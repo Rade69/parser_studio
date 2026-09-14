@@ -1,7 +1,7 @@
 ---
 task_id: A3
 title: "Excel document adapter — DocumentReader port + ExcelDocumentReader implementacija"
-status: ACTIVE
+status: DONE
 risk: MEDIUM-HIGH
 date: 2026-09-14
 branch: dev (base)
