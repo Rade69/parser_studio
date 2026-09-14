@@ -9,8 +9,10 @@
 ```text
 Date:           2026-09-14
 Branch:         dev
-HEAD:           M2+M4 merge (commit c91c498) + UI0/GATE-0 LOCKED
-Working tree:   mixed — V3 -> istorija preimenovano, GUI_BLUEPRINT.md novi
+HEAD:           12a1ccb — FAZA C (Generic extraction C1-C5) merge
+Working tree:   clean za tracked fajlove; UNTRACKED: PARSER_STUDIO_GUI_BLUEPRINT_V1.md,
+                PARSER_STUDIO_KANONSKI_PLAN_V3_2.md, agent_reports/M1-task-contract.md,
+                asset/ (GUI mockup)
 Python:         3.11+
 Platform:       Windows (H:/parser_studio)
 ```
@@ -50,8 +52,8 @@ Ako se `docs/PLAN.md` (v3.2) i stari V3 razlikuju, **V3.2 je autoritet**. Posebn
 ## Current canonical phase
 
 ```text
-Phase:          FAZA UI0 (GATE-0 LOCKED) + FAZA B (M1-M5 zavrseni)
-Current step:   FAZA B DONE; sledeca FAZA C (Generic extraction)
+Phase:          FAZA UI0 (GATE-0 LOCKED) + FAZA B COMPLETE + FAZA C COMPLETE
+Current step:   FAZA C DONE; sledeca FAZA D (Oracle bootstrap, V3_2 §44)
 ```
 
 FAZA UI0 (Product/GUI Blueprint) **ZAKLJUČANA** 14.09.2026 sa `docs/GUI_BLUEPRINT.md` (komplet blueprint: application shell + 9 glavnih ekrana + 9 modala + 16 obaveznih stanja + centralni tok).
@@ -60,7 +62,9 @@ FAZA UI0 (Product/GUI Blueprint) **ZAKLJUČANA** 14.09.2026 sa `docs/GUI_BLUEPRI
 
 **FAZA B COMPLETE** (M1+M2+M3+M4+M5 = 236 novih testova, svi merge-ovani u dev).
 
-Sledeca FAZA: **C — Generic extraction** (V3_2 §43 FAZA C).
+**FAZA C COMPLETE** (C1+C2+C3+C4+C5 = 148 novih testova, svi merge-ovani u dev).
+
+Sledeca FAZA: **D — Oracle bootstrap** (V3_2 §44 FAZA D).
 
 ---
 
@@ -136,13 +140,13 @@ Sljedeće iz V3 **još ne postoji** u kodu:
 ## Test baseline
 
 ```text
-pytest:        582 PASS, 1 SKIP, 1 FAIL
-ruff:          192 errors (ista kao A7 — M1+M2+M3+M4+M5 dodali 0; 18 preostalih u src/parser_studio/ su pre-existing FAZA A)
-contract drift: PASS (M1+M2+M3+M4+M5 ne diraju contract/)
-architecture:   4 PASS (M1+M2+M3+M4+M5 ne smiju break-ati V3 DEP-001..DEP-004 — netaknuto)
+pytest:        730 PASS, 1 SKIP, 1 FAIL
+ruff:          192 errors (ista kao M5 — FAZA C dodala 0; preostali su pre-existing FAZA A)
+contract drift: PASS (FAZA C ne dira contract/)
+architecture:   4 PASS (FAZA C ne smije break-ati V3 DEP-001..DEP-004 — netaknuto)
 ```
 
-Delta vs M1+M3: 490 → 582 = +92 novih testova (M2: 67, M4: 14, M5: 11).
+Delta vs M5: 582 → 730 = +148 novih testova (C1: 34, C2: 80, C3: 18, C4: 43, C5: 16 — 43 od C2 refaktorisano kroz ruff cleanup commit).
 
 ### pytest FAIL detalji
 
@@ -177,6 +181,11 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 | M4 | DONE | InvoiceReviewView + CellTableView Qt widgets (V3 B4). InvoiceReviewView(QWidget) sa CellTableView + candidate selector + confirm panel; emituje `confirmed(str, object)` signal. CellTableView(QTableWidget) read-only (NoEditTriggers), load_document(DocumentEvidence) populates table. 14 novih testova (7 cell_table + 7 review). `review_invoice_viewmodel.py` NIJE mijenjan. pytest 571 PASS nakon M4 merge-a, architecture 4/4 PASS, ruff 0 na M4 fajlovima. Implementer: Pi agent u `H:/parser_studio-m4` (worktree). Commit d85aabc, pushan na origin/task/m4-review-gui, merge-ovan u dev (Mavis radi nezavisan review, Implementer != Reviewer). |
 | UI0 | DONE | FAZA UI0 (Product/GUI Blueprint) — V3.2 §40A, GATE-0 LOCKED 14.09.2026. `docs/GUI_BLUEPRINT.md` sadrži: application shell (left navigation 9 stavki, top bar, status bar) + 9 glavnih ekrana (UI-01 Početna / UI-02 Dokumenti / UI-03 Review / UI-04 Gold Dataset / UI-05 Layout Profile + OCR Reading Map / UI-06 Parser Build / UI-07 Verification / UI-08 Export / UI-09 Settings) + 9 ključnih modala (M-01..M-09) + 16 obaveznih stanja (UI0.4: EMPTY, LOADING, ANALYZING, FOUND, NOT_PRESENT, AMBIGUOUS, FAILED, USER_CORRECTED, USER_VERIFIED, PROFILE_MATCH_HIGH/REVIEW/NO_MATCH, BUILD_READY/FAILED, VERIFICATION_PASS/FAIL, EXPORT_BLOCKED) + centralni end-to-end tok (Početna → Dokumenti → Import → Analyze → Review → User_Verified → Gold → Layout Profile → Holdout → Build → Verification → Export) + povratne petlje (correction, drift, verification fail). V3.2 plan zamijenio stari V3 (prebacen u `docs/istorija/`). GATE-0 PASS — ozbiljno ožičavanje A1+ funkcija dozvoljeno. |
 | M5 | DONE | Prvi Gold Corpus (V3 B5) — 4 sintetičke fakture (Faktura-1=11, Faktura-2=4, Medicopharm=84, Sumaprom=138 itema; UKUPNO 237 itema) sa svim 20 ciljnih polja (9 invoice + 11 item) potvrđenih u USER_CONFIRMED events (2643 ukupno: 4×9 invoice + 237×11 item). Sintetički .xlsx generator u `tests/fixtures/gold/generator.py` (deterministicki seed po vendor_id, NE stvarne fakture po V3 ARCH-010). Integration test u `tests/integration/test_gold_corpus.py` (11 testova, 4 klase: Structure, Import, Verify, Projection, Integration). GoldDataset projection verified: 4 distinct documents, 2643 entries, all USER_CONFIRMED. pytest 582 PASS nakon M5 merge-a (+11 M5 testova), architecture 4/4 PASS, ruff 0 na M5 scope. Production kod netaknut (M5 je SAMO test + fixtures). Implementer: Mavis u `H:/parser-studio-worktrees/m5-gold-corpus`. Commit fc1d003, pushan na origin/task/m5-gold-corpus, merge-ovan u dev. **FAZA B COMPLETE.** |
+| C1 | DONE | Concept library (V3_2 §43.1) — `src/parser_studio/domain/concepts/` sa `Concept` dataclassom (field_name, locale, labels, header_aliases, value_patterns, description) + `_normalize_for_match` helper (NFKC + strip dijakritika + lowercase) + `ConceptLibrary` (find_for_field, find_by_label) sa 80 koncepata (20 polja × 4 jezika: BS/HR/SR/EN). 34 nova testova (test_concept: 16, test_concept_library: 18). pytest 616 PASS nakon C1 merge-a, architecture 4/4 PASS, ruff 0 na C1 fajlovima. Domain/concepts NE importuje application/ports/adapters (V3 DEP-001 provjereno). Commit e3ba97e, pushan na origin/task/faza-c, merge-ovan u dev. |
+| C2 | DONE | Candidate producers (V3_2 §43.2) — 5 producenta u `src/parser_studio/application/extraction/producers/`: `LabelRightProducer` (confidence 0.80), `LabelBelowProducer` (0.75), `TableHeaderProducer` (0.85), `ColumnContentProducer` (0.70), `ValueShapeProducer` (0.60). Svi nasljeđuju `CandidateProducer` Protocol (produces) i vraćaju `list[Candidate]` sa `FieldContext`. `_normalize_for_match` lokalni helper u `Concept` (NE u `domain/extraction/header_matching.py` jer domain/concepts ne smije ovisiti o domain/extraction — V3 DEP-001). 37 novih testova (label_right: 8, label_below: 8, table_header: 7, column_content: 7, value_shape: 7). Ruff cleanup commit (F401 ×3 + SIM102 u `excel_header.py`). pytest 653 PASS nakon C2 merge-a, architecture 4/4 PASS, ruff 0 na C2 fajlovima. Commit b9ccfb9 (arch) + c3d2174 (ruff), merge-ovan u dev. |
+| C3 | DONE | ResolveCandidates use case (V3_2 §43.3) — `src/parser_studio/application/extraction/resolve_candidates.py`: `ResolveCandidates` sa 3 strategije: `FIRST_MATCH` (uzmi prvi kandidat), `HIGHEST_CONFIDENCE` (uzmi kandidata sa max confidence), `CONSENSUS` (uzmi kandidata koji se pojawia u 2+ izvora). `ResolveRequest`, `ResolveResult`, `FieldResolution` frozen dataclasses. 18 novih testova. pytest 671 PASS nakon C3 merge-a, architecture 4/4 PASS, ruff 0 na C3 fajlovima. Commit bbab674, pushan na origin/task/faza-c, merge-ovan u dev. |
+| C4 | DONE | Validators (V3_2 §43.4) — 6 validatora u `src/parser_studio/application/extraction/validators/`: `SyntaxValidator` (parseability, regex), `StructureValidator` (required fields, nested structure), `ArithmeticValidator` (line_amount = quantity × unit_price sa 0.02 tolerancijom; hrvatski decimal separator `,` → `.`; NE izmišlja vrijednosti po V3 ARCH-009), `DomainValidator` (semantička pravila po polju), `CrossFieldValidator` (invoice_total = sum line_amount), `CrossDocumentValidator` (placeholder INFO — implementacija u FAZA D). Svaki validator nasljeđuje `Validator` Protocol sa `validate(field_name, value, context) -> list[ValidationIssue]`. 43 nova testova (syntax: 7, arithmetic: 8, structure: 6, domain: 7, cross_field: 8, cross_document: 7). pytest 714 PASS nakon C4 merge-a, architecture 4/4 PASS, ruff 0 na C4 fajlovima. Commit b2f8e97, pushan na origin/task/faza-c, merge-ovan u dev. |
+| C5 | DONE | RealGoldEvaluator (V3_2 §43.5) — `src/parser_studio/application/extraction/real_gold_evaluator.py`: `RealGoldEvaluator.evaluate(document, gold_invoice) -> EvaluationReport`; `DocumentEvaluation` (per-document: total_fields, correct_fields, accuracy); `EvaluationReport` (aggregate: documents, overall_accuracy, per_field_accuracy, failed_documents). Koristi `GoldDataset` projection iz FAZA A6 + `ResolveCandidates` iz C3 + 6 validatora iz C4. 16 novih testova (test_real_gold_evaluation: 4 klase: Structure, SingleDocument, Aggregate, IntegrationWithGold). Integration test: uspoređuje C1-C5 pipeline output sa M5 Gold korpusom. pytest 730 PASS nakon C5 merge-a, architecture 4/4 PASS, ruff 0 na C5 fajlovima. Commit 8dd2ece (C5) + c3d2174 (ruff), pushan na origin/task/faza-c, merge-ovan u dev. **FAZA C COMPLETE.** |
 
 ---
 
@@ -215,24 +224,24 @@ Detaljan izvještaj: `agent_reports/2026-09-14-graft-evaluation.md`.
 ## Last completed task
 
 ```text
-M5 — Prvi Gold Corpus (V3 B5) DONE.
-4 sintetičke fakture (237 itema, 20 ciljnih polja, 2643 USER_CONFIRMED events).
-Commit fc1d003 (arch + docs), merge-ovan u dev.
-FAZA B COMPLETE: M1 + M2 + M3 + M4 + M5 (236 novih testova ukupno).
+FAZA C — Generic extraction (V3_2 §43) COMPLETE.
+C1 Concept library (80 koncepata), C2 5 producers, C3 ResolveCandidates,
+C4 6 validators, C5 RealGoldEvaluator — 148 novih testova.
+Commit 12a1ccb (merge), pushan na origin/dev.
+FAZA C COMPLETE: C1 + C2 + C3 + C4 + C5 (148 novih testova, architecture 4/4 PASS).
 ```
 
 ---
 
 ## Next recommended task
 
-**FAZA B COMPLETE.** Preostaje FAZA C (V3_2 §43).
+**FAZA C COMPLETE.** Preostaje FAZA D (V3_2 §44).
 
 Sljedeci FAZA-i:
-- FAZA C — Generic extraction (C1-C3, još nije specificirano u V3_2)
-- FAZA D — Verifier (compare 20 polja, I1-I4)
+- FAZA D — Oracle bootstrap (compare vendor parser output vs Gold dataset, V3_2 §44)
 - FAZA E — Layout Learning — djelomicno zavrseno (E1 Fingerprint + E2 Builder; preostaje E3 Matcher, E4 Drift, E5 Holdout + E6 OCR Reading Map holdout)
-- FAZA G — AI Advisor (G1-G5, M3 je dio G1+G2)
-- FAZA H — VendorParserModel + Codegen (H1-H4, M1 je dio H1)
+- FAZA G — AI Advisor (G1-G5, M3 je dio G1+G2; preostaje G3 Cache, G4 Live providers, G5 Verification assist)
+- FAZA H — VendorParserModel + Codegen (H1-H4, M1 je dio H1; preostaje H2 Jinja, H3 AST/compile, H4 Standalone export)
 - FAZA I — Verifier (I1-I4)
 - FAZA J — CLI + reports
 
@@ -255,6 +264,8 @@ Cleanup zadaci (out-of-band):
 - Commit `PARSER_STUDIO_KANONSKI_PLAN_V3_1.md` (korisnicka kopija) ILI vratiti originalni `PARSER_STUDIO_KANONSKI_PLAN_V3.md` u git.
 - Worktree cleanup za `H:/parser-studio-worktrees/m5-gold-corpus/` (cleanup po završetku taska).
 - Branch cleanup za `task/m5-gold-corpus` (vec merged u dev).
+- Worktree cleanup za `H:/parser-studio-worktrees/faza-c/` (FAZA C završen, merged u dev).
+- Branch cleanup za `task/faza-c` (vec merged u dev).
 
 
 ---
@@ -274,3 +285,4 @@ Cleanup zadaci (out-of-band):
 - **2026-09-14** — M5 (Prvi Gold Corpus, V3 B5) DONE. Sintetički .xlsx generator u `tests/fixtures/gold/generator.py` (4 fakture: Faktura-1=11, Faktura-2=4, Medicopharm=84, Sumaprom=138 itema; UKUPNO 237 itema) + integration test u `tests/integration/test_gold_corpus.py` (11 testova, 4 klase: Structure, Import, Verify, Projection, Integration). Acceptance: 4 distinct documents, 2643 USER_CONFIRMED events (4×9 invoice + 237×11 item), sva 20 ciljnih polja prisutna po dokumentu. V3 ARCH-010 poštovan: SAMO sintetički podaci (NE stvarne fakture). pytest 582 PASS nakon M5 merge-a (+11 M5 testova od 571), architecture 4/4 PASS, ruff 0 na M5 scope. Production kod (`src/parser_studio/**`) netaknut — M5 je SAMO test + fixtures. Implementer: Mavis u `H:/parser-studio-worktrees/m5-gold-corpus/`. Commit fc1d003 (arch + docs), pushan na `origin/task/m5-gold-corpus`, merge-ovan u dev (Mavis radi kao koordinator za svoj rad). **FAZA B COMPLETE** (M1+M2+M3+M4+M5, 236 novih testova).
 
 - **2026-09-14** — FAZA UI0 (Product/GUI Blueprint) ZAKLJUČANA. V3.2 (dorađeni V3) donio novu FAZU UI0 prije FAZA A. Korisnikov draft `PARSER_STUDIO_GUI_BLUEPRINT_V1.md` postao kanonski `docs/GUI_BLUEPRINT.md` (proširen sa V3.2 §40A UI0.4 obaveznim stanjima: EMPTY, LOADING, PROFILE_MATCH_REVIEW; centralnim tokom + povratnim petljama). `docs/PLAN.md` zamijenjen sa V3.2 verzijom (56873 bytes); stari V3 premješten u `docs/istorija/PARSER_STUDIO_KANONSKI_PLAN_V3.md`. GATE-0 (GUI/UX Blueprint Locked) PASS. V3.2 ključne promjene: ARCH-011 (GUI/UX Blueprint se zaključava prije functional implementacije, novo nepormjenjivo pravilo), FAZA UI0 sa 6 podzadataka (UI0.1..UI0.6), OCR Reading Map (E2.5, novi concept izveden iz LayoutProfile-a, koristi `RegionTextReader` port + `LocalRegionOCR` adapter — još nisu implementirani u kodu). CURRENT_STATE ažuriran sa UI0 status DONE + GATE-0 lock.
+- **2026-09-14** — FAZA C (Generic extraction, V3_2 §43) COMPLETE. C1: `src/parser_studio/domain/concepts/` (Concept + ConceptLibrary, 80 koncepata za 20 polja × 4 jezika: BS/HR/SR/EN; `_normalize_for_match` lokalni u Concept: NFKC + strip Mn dijakritika + lowercase; 34 testa). C2: `src/parser_studio/application/extraction/producers/` (LabelRight 0.80 / LabelBelow 0.75 / TableHeader 0.85 / ColumnContent 0.70 / ValueShape 0.60; svi nasljeđuju `CandidateProducer` Protocol sa `produces(field, context) -> list[Candidate]`; 37 testova; ruff cleanup commit c3d2174 za F401×3+SIM102 u `excel_header.py`). C3: `ResolveCandidates` use case (`FIRST_MATCH`/`HIGHEST_CONFIDENCE`/`CONSENSUS` strategije; 18 testova). C4: 6 validatora u `src/parser_studio/application/extraction/validators/` (Syntax/Structure/Arithmetic/Domain/CrossField/CrossDocument; ArithmeticValidator poštuje V3 ARCH-009 — NE izmišlja vrijednosti, samo flaggira sa 0.02 tolerancijom; hrvatski decimal `,`→`.`; 43 testa). C5: `RealGoldEvaluator` u `src/parser_studio/application/extraction/real_gold_evaluator.py` (EvaluationReport + DocumentEvaluation; integration test poredi C1-C5 pipeline output sa M5 Gold korpusom; 16 testova). FAZA C 148 novih testova, 730 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope). Architecture 4/4 PASS, Ruff FAZA C clean, Contract drift PASS (FAZA C ne dira contract/). Implementation: Mavis (serijski default po user pref). Worktree: `H:/parser-studio-worktrees/faza-c/`. Branch: `task/faza-c`. Commits: e3ba97e (C1) + b9ccfb9 (C2) + bbab674 (C3) + b2f8e97 (C4) + 8dd2ece (C5) + c3d2174 (ruff cleanup). Merge: 12a1ccb (no-ff). Push: origin/dev i origin/task/faza-c. **FAZA C COMPLETE.**
