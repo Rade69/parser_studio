@@ -1,7 +1,7 @@
 ---
 task_id: A6
 title: "LearningRepository port + SQLite adapter + Gold Dataset projection"
-status: ACTIVE
+status: DONE
 risk: MEDIUM
 date: 2026-09-14
 branch: dev (base)
