@@ -31,6 +31,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+addopts = ["--import-mode=importlib"]
 markers = [
     "gui: testovi koji zahtijevaju Qt (preskacu se u headless CI)",
     "realdata: testovi koji zahtijevaju stvarne uzorke faktura van repozitorijuma",
