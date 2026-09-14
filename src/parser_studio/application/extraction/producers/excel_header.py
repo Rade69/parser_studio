@@ -27,11 +27,8 @@ from parser_studio.domain.extraction.header_matching import (
 )
 from parser_studio.domain.invoice.fields import (
     _ESSENTIAL_FIELDS,
-    _FOOTER_PREFIXES,
-    COLUMN_ALIASES,
 )
 from parser_studio.ports.candidate_producer import (
-    CandidateProducer,
     FieldContext,
 )
 
@@ -152,10 +149,13 @@ class ExcelHeaderProducer:
         has_content = False
         for field_name in _ESSENTIAL_FIELDS:
             col = mapping.get(field_name)
-            if col is not None and col < len(rows[row_idx]):
-                if str(rows[row_idx][col]).strip():
-                    has_content = True
-                    break
+            if (
+                col is not None
+                and col < len(rows[row_idx])
+                and str(rows[row_idx][col]).strip()
+            ):
+                has_content = True
+                break
         if not has_content:
             return False
         return not self._is_footer_row(rows, row_idx, mapping)
