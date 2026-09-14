@@ -47,11 +47,11 @@ Ako se `docs/PLAN.md` i V3 razlikuju, V3 je autoritet dok se razlika ne pomiri u
 ## Current canonical phase
 
 ```text
-Phase:          FAZA B (M1+M3 paralelno zavrseni, merge u dev)
-Current step:   M1 (CanonicalInvoice) DONE + M3 (AI Advisor) DONE
+Phase:          FAZA B (M1+M2+M3+M4 zavrseni, merge u dev)
+Current step:   Svi M1+M2+M3+M4 DONE; preostaje M5 (Gold Corpus)
 ```
 
-FAZA B u toku. M1 + M3 paralelan rad zavrsen 14.09.2026 (commit 09ce691 + d19adbb), merge u dev.
+FAZA B u toku. M1+M3 zavrseni 14.09.2026 (commit 09ce691 + d19adbb), M2 zavrsen (commit 9c20fa2), M4 zavrsen (commit d85aabc), svi merge-ovani u dev.
 
 ---
 
@@ -125,11 +125,13 @@ Sljedeće iz V3 **još ne postoji** u kodu:
 ## Test baseline
 
 ```text
-pytest:        490 PASS, 1 SKIP, 1 FAIL
-ruff:          192 errors (ista kao A7 — M1+M3 dodali 0; 18 preostalih u src/parser_studio/ su pre-existing FAZA A)
-contract drift: PASS (M1+M3 ne diraju contract/)
-architecture:   4 PASS (M1+M3 ne smiju break-ati V3 DEP-001..DEP-004 — netaknuto)
+pytest:        571 PASS, 1 SKIP, 1 FAIL
+ruff:          192 errors (ista kao A7 — M1+M2+M3+M4 dodali 0; 18 preostalih u src/parser_studio/ su pre-existing FAZA A)
+contract drift: PASS (M1+M2+M3+M4 ne diraju contract/)
+architecture:   4 PASS (M1+M2+M3+M4 ne smiju break-ati V3 DEP-001..DEP-004 — netaknuto)
 ```
+
+Delta vs M1+M3: 490 → 571 = +81 novih testova (M2: 67, M4: 14).
 
 ### pytest FAIL detalji
 
@@ -142,7 +144,7 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 
 ### ruff detalji
 
-192 ukupno. **M1 (domain/invoice/) + M3 (ports/advisor.py, adapters/ai/, application/learning/) = 0 ruff grešaka**. Preostalih 18 u `src/parser_studio/` su pre-existing FAZA A (nije M1/M3 scope).
+192 ukupno. **M1+M2+M3+M4 = 0 ruff grešaka** (svi novi fajlovi clean). Preostalih 18 u `src/parser_studio/` su pre-existing FAZA A.
 
 ---
 
@@ -160,6 +162,8 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 | A7 | DONE | Presentation migriran u `src/parser_studio/presentation/`: cli/psbuild.py (CLI entry point sa import/analyze/confirm komandama, --version action, try/except FileNotFoundError za exit code 1), qt/viewmodels/review_invoice_viewmodel.py (MVVM placeholder), qt/widgets/, qt/wizard/ (placeholder moduli). Architecture tests u `tests/architecture/test_import_boundaries.py` (AST provjera V3 DEP-001..DEP-004, 4 test PASS). 13 novih presentation unit testova (8 CLI + 5 viewmodel). pyproject.toml: cryptography premješten u `optional[signing]`, entry point `parser_studio.presentation.cli.psbuild:main`. Legacy `cli/services/viewmodels/views/` obrisani (svi prazni). pytest 346 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing), ruff 192 (A7 NIJE dodao nove), contract drift PASS. Commit 5ed50ea, pushan na origin/dev. |
 | M1 | DONE | CanonicalInvoice (20 vendor-agnostičkih polja) + InvoiceLine + InvoiceStatus u `src/parser_studio/domain/invoice/canonical_invoice.py` + VendorParserModel + LayoutRule + FieldExtractionRule + ValidationRule + NormalizationRule + FallbackStrategy + ExtractionStrategy + ConsumedPathsBehavior u `src/parser_studio/domain/invoice/vendor_parser_model.py`. 102 nova testova (43 canonical_invoice + 59 vendor_parser_model). pytest 448 PASS, architecture 4/4 PASS, ruff 0 na M1 fajlovima. Disjunktni ownership sa M3 (M1 u domain/invoice/, M3 u ports+adapters/ai+application/learning/). Worker: Pi agent u worktree-u H:/parser_studio-m1. Commit 09ce691, pushan na origin/m1-canonical-invoice, merge-ovan u dev. |
 | M3 | DONE | AI Advisor port + NullAdvisor + ConsultAdvisor use case. Advisor Protocol (runtime_checkable) sa `mode: AdvisorMode` + `consult(field, candidates, context)` u `src/parser_studio/ports/advisor.py`. AdvisorMode enum (OFF/CACHE_ONLY/LIVE) + AIAdvice dataclass (field, suggested_value, locator_evidence, confidence, reasoning). NullAdvisor adapter (OFF rezim, bez eksternih importa) u `src/parser_studio/adapters/ai/null_advisor.py`. ConsultAdvisor use case u `src/parser_studio/application/learning/consult_advisor.py` (ConsultRequest/ConsultResult frozen dataclasses, wrap Advisor port). 42 nova testova. pytest 490 PASS nakon merge-a M1+M3, architecture 4/4 PASS, ruff 0 na M3 fajlovima. bootstrap.py NEIZMJENJEN (Advisor se instancira eksplicitno). Commit d19adbb, pushan na origin/m3-ai-advisor, merge-ovan u dev. |
+| M2 | DONE | Profile Builder (V3 E1+E2): LayoutFingerprint (SHA-256 hash sa sorted components) + LayoutProfile (vendor_id, version, rules, source_documents) + ProfileRule + RuleParameter u `src/parser_studio/domain/profiles/`. ProfileRepository Protocol (runtime_checkable) u `src/parser_studio/ports/profile_repository.py`. InMemoryProfileRepository (bez sqlite3) u `src/parser_studio/adapters/profiles/`. BuildLayoutProfile use case + BuildRequest/BuildResult/GoldSample u `src/parser_studio/application/profiles/build_layout_profile.py` (version drift bump, fingerprint mismatch warning, common_metadata pravila). 67 nova testova. pytest 557 PASS nakon M2 merge-a, architecture 4/4 PASS, ruff 0 na M2 fajlovima. pyproject.toml: `addopts = ["--import-mode=importlib"]` dodan (fix za namespace conflict). Commit 9c20fa2 (arch) + a870500 (chore pyproject), pushan na origin/task/m2-profile-builder, merge-ovan u dev. V3 ARCH-004: LayoutProfile je derived artifact (deletable, re-buildable). |
+| M4 | DONE | InvoiceReviewView + CellTableView Qt widgets (V3 B4). InvoiceReviewView(QWidget) sa CellTableView + candidate selector + confirm panel; emituje `confirmed(str, object)` signal. CellTableView(QTableWidget) read-only (NoEditTriggers), load_document(DocumentEvidence) populates table. 14 novih testova (7 cell_table + 7 review). `review_invoice_viewmodel.py` NIJE mijenjan. pytest 571 PASS nakon M4 merge-a, architecture 4/4 PASS, ruff 0 na M4 fajlovima. Implementer: Pi agent u `H:/parser_studio-m4` (worktree). Commit d85aabc, pushan na origin/task/m4-review-gui, merge-ovan u dev (Mavis radi nezavisan review, Implementer != Reviewer). |
 
 ---
 
@@ -198,42 +202,40 @@ Detaljan izvještaj: `agent_reports/2026-09-14-graft-evaluation.md`.
 ## Last completed task
 
 ```text
-M1 + M3 paralelni rad zavrsen (Mavis = M3 Advisor, Pi worker = M1 CanonicalInvoice), oba merge-ovana u dev.
-Commits: 09ce691 (M1) + d19adbb (M3 evidence).
+M2 + M4 paralelni rad zavrsen (Mavis = M2 Profile Builder, Pi worker = M4 Review GUI), oba merge-ovana u dev.
+Commits: 9c20fa2 (M2) + d85aabc (M4) + fd3f768 (M4 merge).
 ```
 
 ---
 
 ## Next recommended task
 
-FAZA B u toku. Preostali M2 + M4 paralelno, pa M5 serijski:
+FAZA B preostaje samo **M5 (Gold Corpus)**:
 
 ```text
-M2 — Profile Builder (LayoutFingerprint, LayoutProfile, V3 B2)
-     Koristi: CanonicalInvoice (M1) + ExcelHeaderProducer (A4)
-     Output:  application/profiles/build_profile.py + adapters/profiles/
-
-M4 — Review Invoice GUI (V3 B4)
-     Koristi: ReviewInvoiceViewModel (A7) + asset/parser_studio_gui_mockup.png
-     Output:  presentation/qt/widgets/invoice_review_view.py + cell_table_view.py
-
 M5 — Gold Corpus (V3 B5)
-     Zavisi od: M1+M2+M4 output-a
+     Zavisi od: M1 (CanonicalInvoice) + M2 (LayoutProfile)
      Output: 4 pilot fakture sa 237 itema + 20 ciljnih polja
+     Acceptance: potvrditi sve 4 pilot fakture
 ```
 
-Preporučeni redoslijed:
+M5 je serijski (zavisi od M1+M2 output-a). Nema vise paralelnih prilika u FAZA B.
 
-1. **M2 + M4 paralelno** — Coordinator (Mavis) + Pi worker. M2 u `domain/profiles/` + `application/profiles/`; M4 u `presentation/qt/widgets/`. Disjunktni ownership: M2 NE SMIJE dirati presentation; M4 NE SMIJE dirati domain/application/profile.
-2. **M5 serijski** — Zavisi od oba.
-3. **HttpVisionAdvisor (G3)** — Provider implementacija iza transport apstrakcije. Zavisi od M3 (port). Može ići paralelno sa M5.
+Sljedece FAZE (van M5):
+- FAZA C — Learning (apply_learning use case, FAZA C1-C3)
+- FAZA D — Verifier (compare 20 polja, I1-I4)
+- FAZA E — Layout Learning — djelomicno zavrseno (E1 Fingerprint + E2 Builder; preostaje E3 Matcher, E4 Drift, E5 Holdout)
+- FAZA F-H — Codegen (F1-F3, G1-G5 AI Advisor, H1-H4)
+- FAZA I-J — Verifier + CLI
 
 Cleanup zadaci (out-of-band):
 - Fix `test_f9_no_broken_rows` u benchmark modulu.
 - Cleanup 192 ruff grešaka (pre-existing FAZA A).
 - Ažurirati `pyproject.toml` description (V3 AI opcija).
-- Commit `asset/parser_studio_gui_mockup.png` (M4 input).
+- Commit `asset/parser_studio_gui_mockup.png` (M4 input — sada UI implementiran).
 - Commit `PARSER_STUDIO_KANONSKI_PLAN_V3_1.md` (korisnicka kopija) ILI vratiti originalni `PARSER_STUDIO_KANONSKI_PLAN_V3.md` u git.
+- Cleanup worktree-ova `H:/parser_studio-m1`, `H:/parser_studio-m2`, `H:/parser_studio-m4` (svi zavrseni).
+
 
 ---
 
@@ -247,4 +249,4 @@ Cleanup zadaci (out-of-band):
 - **2026-09-14** — 2 root fajla DELETED u radnom stablu (`PARSER_STUDIO_KONSOLIDOVANI_PLAN_I_PREPORUKE.md`, stari `PLAN.md`) — sadržaj je u git historiji; ne vraćaju se fizički.
 - **2026-09-14** — A1 acceptance ZAVRŠEN: `src/parser_studio/` skelet kreiran (18 `__init__.py` + `bootstrap.py`), `pyproject.toml` packages.find.where=src, pythonpath=["src","."]. pytest ista statistika (180 PASS + 1 FAIL), ruff 157 (nije pogoršano), contract drift PASS, `import parser_studio.bootstrap` OK. Graft blast: 20 seed simbola, 0 impacted dependents. Commit b1671f6, pushan na origin/dev. Task Contract: `agent_reports/A1-task-contract.md`.
 - **2026-09-14** — A2 acceptance ZAVRŠEN: Evidence domain u `src/parser_studio/domain/evidence/` (6 modela + adapter, svi frozen=True, slots=True) + 41 unit testova (svi PASS). pytest 221 PASS + 1 FAIL (test_f9 pre-existing benchmark regression), ruff 158 (+1 cell_compat upozorenje, u okviru tolerance), contract drift PASS. Domain NE importuje sqlite3/openpyxl/xlrd/PySide6/docling/contract. cell_compat koristi TYPE_CHECKING za legacy Cell. Graft blast: 52 seed simbola, 0 impacted dependents. Commit c1a07d6, pushan na origin/dev. Task Contract: `agent_reports/A2-task-contract.md`.
-- **2026-09-14** — M1 + M3 paralelni rad zavrsen. M1 (Pi worker, H:/parser_studio-m1 worktree, grana m1-canonical-invoice): CanonicalInvoice (20 vendor-agnostičkih polja) + VendorParserModel + 7 supporting rule types + LayoutRule + ExtractionStrategy + ConsumedPathsBehavior u `src/parser_studio/domain/invoice/`. 102 nova testova (43 canonical_invoice + 59 vendor_parser_model). M3 (Mavis, H:/parser_studio worktree, grana m3-ai-advisor): AI Advisor Protocol (runtime_checkable) + AdvisorMode enum + AIAdvice dataclass u `ports/advisor.py`, NullAdvisor adapter (OFF rezim, bez openai/anthropic/httpx) u `adapters/ai/`, ConsultAdvisor use case u `application/learning/`. 42 nova testova (15 port + 12 adapter + 15 use case). Disjunktni ownership poštovan (M1 samo u domain/invoice/, M3 u ports+adapters/ai+application/learning/). Merge u dev: M1 commit 09ce691 + M3 commit d19adbb (evidence). pytest 490 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope), architecture 4/4 PASS, ruff 0 na M1+M3 fajlovima. bootstrap.py NEIZMJENJEN. Task Contracts: `agent_reports/M1-task-contract.md` + `agent_reports/M3-task-contract.md`. Evidence: `agent_reports/2026-09-14-M1-evidence.md` + `agent_reports/2026-09-14-M3-evidence.md`. FAZA B u toku.
+- **2026-09-14** — M2 + M4 paralelni rad zavrsen. M2 (Mavis, H:/parser_studio-m2 worktree, grana task/m2-profile-builder): Profile Builder (V3 E1+E2) — LayoutFingerprint (SHA-256 hash sa sorted components) + LayoutProfile (vendor_id, version, rules, source_documents) + ProfileRule + RuleParameter u `src/parser_studio/domain/profiles/`. ProfileRepository Protocol + InMemoryProfileRepository. BuildLayoutProfile use case (version drift bump, fingerprint mismatch warning, common_metadata pravila). 67 novih testova. pyproject.toml: `addopts = ["--import-mode=importlib"]` dodan (fix za namespace conflict sa 3 nova test direktorija sa istim leaf name). M4 (Pi agent, H:/parser_studio-m4 worktree, grana task/m4-review-gui): InvoiceReviewView(QWidget) + CellTableView(QTableWidget, read-only) u `src/parser_studio/presentation/qt/widgets/`. `confirmed(str, object)` signal emisija. 14 novih testova (7 cell_table + 7 review). review_invoice_viewmodel.py netaknuto (Mavis-ov A7 output ostao nepromijenjen). Disjunktni ownership poštovan (M2 u domain/profiles/+application/profiles/+adapters/profiles/+ports/profile_repository.py, M4 u presentation/qt/widgets/). Merge redoslijed: M2 PRVI u dev (f3696c3), pa M4 (fd3f768). Mavis radi nezavisan review M4 (pošto je Mavis implementer M2, Implementer != Reviewer). pytest 571 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope), architecture 4/4 PASS, ruff 0 na M2+M4 fajlovima. FAZA B u toku (preostaje samo M5 Gold Corpus). Task Contracts: `agent_reports/M2-task-contract.md` + `agent_reports/M4-task-contract.md` + `agent_reports/2026-09-14-M4-briefing-prompt.md`. Evidence: `agent_reports/2026-09-14-M2-evidence.md` + `agent_reports/2026-09-14-M4-evidence.md`.
