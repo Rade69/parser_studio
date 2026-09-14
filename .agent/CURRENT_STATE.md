@@ -50,15 +50,19 @@ Ako se `docs/PLAN.md` (v3.2) i stari V3 razlikuju, **V3.2 je autoritet**. Posebn
 ## Current canonical phase
 
 ```text
-Phase:          FAZA UI0 (GATE-0 LOCKED 14.09.2026)
-Current step:   UI0 DONE — GATE-0 PASS; FAZA B nastavlja
+Phase:          FAZA UI0 (GATE-0 LOCKED) + FAZA B (M1-M5 zavrseni)
+Current step:   FAZA B DONE; sledeca FAZA C (Generic extraction)
 ```
 
 FAZA UI0 (Product/GUI Blueprint) **ZAKLJUČANA** 14.09.2026 sa `docs/GUI_BLUEPRINT.md` (komplet blueprint: application shell + 9 glavnih ekrana + 9 modala + 16 obaveznih stanja + centralni tok).
 
-**GATE-0** (GUI/UX Blueprint Locked) — PASS. Sledeci gate je GATE-1 (Architecture Locked, FAZA A0-A7 — vec prosao).
+**GATE-0** (GUI/UX Blueprint Locked) — PASS.
 
-FAZA B (M1+M2+M3+M4) merge-ovana u dev, M5 (Gold Corpus) preostaje.
+**FAZA B COMPLETE** (M1+M2+M3+M4+M5 = 236 novih testova, svi merge-ovani u dev).
+
+Sledeca FAZA: **C — Generic extraction** (V3_2 §43 FAZA C).
+
+---
 
 ---
 
@@ -132,13 +136,13 @@ Sljedeće iz V3 **još ne postoji** u kodu:
 ## Test baseline
 
 ```text
-pytest:        571 PASS, 1 SKIP, 1 FAIL
-ruff:          192 errors (ista kao A7 — M1+M2+M3+M4 dodali 0; 18 preostalih u src/parser_studio/ su pre-existing FAZA A)
-contract drift: PASS (M1+M2+M3+M4 ne diraju contract/)
-architecture:   4 PASS (M1+M2+M3+M4 ne smiju break-ati V3 DEP-001..DEP-004 — netaknuto)
+pytest:        582 PASS, 1 SKIP, 1 FAIL
+ruff:          192 errors (ista kao A7 — M1+M2+M3+M4+M5 dodali 0; 18 preostalih u src/parser_studio/ su pre-existing FAZA A)
+contract drift: PASS (M1+M2+M3+M4+M5 ne diraju contract/)
+architecture:   4 PASS (M1+M2+M3+M4+M5 ne smiju break-ati V3 DEP-001..DEP-004 — netaknuto)
 ```
 
-Delta vs M1+M3: 490 → 571 = +81 novih testova (M2: 67, M4: 14).
+Delta vs M1+M3: 490 → 582 = +92 novih testova (M2: 67, M4: 14, M5: 11).
 
 ### pytest FAIL detalji
 
@@ -151,7 +155,7 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 
 ### ruff detalji
 
-192 ukupno. **M1+M2+M3+M4 = 0 ruff grešaka** (svi novi fajlovi clean). Preostalih 18 u `src/parser_studio/` su pre-existing FAZA A.
+192 ukupno. **M1+M2+M3+M4+M5 = 0 ruff grešaka** (svi novi fajlovi clean). Preostalih 18 u `src/parser_studio/` su pre-existing FAZA A.
 
 ---
 
@@ -172,6 +176,7 @@ Test očekuje da F9 ne bude aktiviran na 10 čistih redova, ali F9 JE aktiviran.
 | M2 | DONE | Profile Builder (V3 E1+E2): LayoutFingerprint (SHA-256 hash sa sorted components) + LayoutProfile (vendor_id, version, rules, source_documents) + ProfileRule + RuleParameter u `src/parser_studio/domain/profiles/`. ProfileRepository Protocol (runtime_checkable) u `src/parser_studio/ports/profile_repository.py`. InMemoryProfileRepository (bez sqlite3) u `src/parser_studio/adapters/profiles/`. BuildLayoutProfile use case + BuildRequest/BuildResult/GoldSample u `src/parser_studio/application/profiles/build_layout_profile.py` (version drift bump, fingerprint mismatch warning, common_metadata pravila). 67 nova testova. pytest 557 PASS nakon M2 merge-a, architecture 4/4 PASS, ruff 0 na M2 fajlovima. pyproject.toml: `addopts = ["--import-mode=importlib"]` dodan (fix za namespace conflict). Commit 9c20fa2 (arch) + a870500 (chore pyproject), pushan na origin/task/m2-profile-builder, merge-ovan u dev. V3 ARCH-004: LayoutProfile je derived artifact (deletable, re-buildable). |
 | M4 | DONE | InvoiceReviewView + CellTableView Qt widgets (V3 B4). InvoiceReviewView(QWidget) sa CellTableView + candidate selector + confirm panel; emituje `confirmed(str, object)` signal. CellTableView(QTableWidget) read-only (NoEditTriggers), load_document(DocumentEvidence) populates table. 14 novih testova (7 cell_table + 7 review). `review_invoice_viewmodel.py` NIJE mijenjan. pytest 571 PASS nakon M4 merge-a, architecture 4/4 PASS, ruff 0 na M4 fajlovima. Implementer: Pi agent u `H:/parser_studio-m4` (worktree). Commit d85aabc, pushan na origin/task/m4-review-gui, merge-ovan u dev (Mavis radi nezavisan review, Implementer != Reviewer). |
 | UI0 | DONE | FAZA UI0 (Product/GUI Blueprint) — V3.2 §40A, GATE-0 LOCKED 14.09.2026. `docs/GUI_BLUEPRINT.md` sadrži: application shell (left navigation 9 stavki, top bar, status bar) + 9 glavnih ekrana (UI-01 Početna / UI-02 Dokumenti / UI-03 Review / UI-04 Gold Dataset / UI-05 Layout Profile + OCR Reading Map / UI-06 Parser Build / UI-07 Verification / UI-08 Export / UI-09 Settings) + 9 ključnih modala (M-01..M-09) + 16 obaveznih stanja (UI0.4: EMPTY, LOADING, ANALYZING, FOUND, NOT_PRESENT, AMBIGUOUS, FAILED, USER_CORRECTED, USER_VERIFIED, PROFILE_MATCH_HIGH/REVIEW/NO_MATCH, BUILD_READY/FAILED, VERIFICATION_PASS/FAIL, EXPORT_BLOCKED) + centralni end-to-end tok (Početna → Dokumenti → Import → Analyze → Review → User_Verified → Gold → Layout Profile → Holdout → Build → Verification → Export) + povratne petlje (correction, drift, verification fail). V3.2 plan zamijenio stari V3 (prebacen u `docs/istorija/`). GATE-0 PASS — ozbiljno ožičavanje A1+ funkcija dozvoljeno. |
+| M5 | DONE | Prvi Gold Corpus (V3 B5) — 4 sintetičke fakture (Faktura-1=11, Faktura-2=4, Medicopharm=84, Sumaprom=138 itema; UKUPNO 237 itema) sa svim 20 ciljnih polja (9 invoice + 11 item) potvrđenih u USER_CONFIRMED events (2643 ukupno: 4×9 invoice + 237×11 item). Sintetički .xlsx generator u `tests/fixtures/gold/generator.py` (deterministicki seed po vendor_id, NE stvarne fakture po V3 ARCH-010). Integration test u `tests/integration/test_gold_corpus.py` (11 testova, 4 klase: Structure, Import, Verify, Projection, Integration). GoldDataset projection verified: 4 distinct documents, 2643 entries, all USER_CONFIRMED. pytest 582 PASS nakon M5 merge-a (+11 M5 testova), architecture 4/4 PASS, ruff 0 na M5 scope. Production kod netaknut (M5 je SAMO test + fixtures). Implementer: Mavis u `H:/parser-studio-worktrees/m5-gold-corpus`. Commit fc1d003, pushan na origin/task/m5-gold-corpus, merge-ovan u dev. **FAZA B COMPLETE.** |
 
 ---
 
@@ -210,39 +215,33 @@ Detaljan izvještaj: `agent_reports/2026-09-14-graft-evaluation.md`.
 ## Last completed task
 
 ```text
-UI0 / GATE-0 LOCKED 14.09.2026.
-docs/GUI_BLUEPRINT.md kreiran (FAZA UI0, V3.2 §40A).
-docs/PLAN.md zamijenjen sa V3.2 (stari V3 premjesten u docs/istorija/).
+M5 — Prvi Gold Corpus (V3 B5) DONE.
+4 sintetičke fakture (237 itema, 20 ciljnih polja, 2643 USER_CONFIRMED events).
+Commit fc1d003 (arch + docs), merge-ovan u dev.
+FAZA B COMPLETE: M1 + M2 + M3 + M4 + M5 (236 novih testova ukupno).
 ```
 
 ---
 
 ## Next recommended task
 
-FAZA B preostaje samo **M5 (Gold Corpus)**:
+**FAZA B COMPLETE.** Preostaje FAZA C (V3_2 §43).
 
-```text
-M5 — Gold Corpus (V3 B5)
-     Zavisi od: M1 (CanonicalInvoice) + M2 (LayoutProfile)
-     Output: 4 pilot fakture sa 237 itema + 20 ciljnih polja
-     Acceptance: potvrditi sve 4 pilot fakture
-```
-
-M5 je serijski (zavisi od M1+M2 output-a). Nema vise paralelnih prilika u FAZA B.
-
-Sljedece FAZE (van M5):
-- FAZA C — Learning (apply_learning use case, FAZA C1-C3)
+Sljedeci FAZA-i:
+- FAZA C — Generic extraction (C1-C3, još nije specificirano u V3_2)
 - FAZA D — Verifier (compare 20 polja, I1-I4)
 - FAZA E — Layout Learning — djelomicno zavrseno (E1 Fingerprint + E2 Builder; preostaje E3 Matcher, E4 Drift, E5 Holdout + E6 OCR Reading Map holdout)
-- FAZA F-H — Codegen (F1-F3, G1-G5 AI Advisor, H1-H4)
-- FAZA I-J — Verifier + CLI
+- FAZA G — AI Advisor (G1-G5, M3 je dio G1+G2)
+- FAZA H — VendorParserModel + Codegen (H1-H4, M1 je dio H1)
+- FAZA I — Verifier (I1-I4)
+- FAZA J — CLI + reports
 
 GUI follow-up zadaci (FAZA UI0 GATE-0 je prosao, sad ekran-po-ekran):
 - UI-03 Review je M4 done (InvoiceReviewView + CellTableView)
+- UI-04 Gold Dataset (M5) — coverage, history, rebuild projection (BEZ novih widgeta, vec M5 acceptance testira projection)
 - UI-01 Početna (Dashboard) — sidebar + stats + recent docs + next-step
 - UI-02 Dokumenti (Import & Library) — filter + import modal
-- UI-04 Gold Dataset (M5) — coverage, history, rebuild projection
-- UI-05 Layout Profile + OCR Reading Map — match: HIGH/REVIEW/NO_MATCH, OCR reading map view
+- UI-05 Layout Profile + OCR Reading Map — match: HIGH/REVIEW/NO_MATCH
 - UI-06 Parser Build — readiness + blockers + GENERATE
 - UI-07 Verification — positive Gold + negative detect + diff
 - UI-08 Export — output folder + verification summary + EXPORT button
@@ -254,7 +253,8 @@ Cleanup zadaci (out-of-band):
 - Ažurirati `pyproject.toml` description (V3 AI opcija).
 - Commit `asset/parser_studio_gui_mockup.png` (M4 input — sada UI implementiran).
 - Commit `PARSER_STUDIO_KANONSKI_PLAN_V3_1.md` (korisnicka kopija) ILI vratiti originalni `PARSER_STUDIO_KANONSKI_PLAN_V3.md` u git.
-- Worktree-ovi `H:/parser_studio-m1`, `-m2`, `-m4` su vec cleanup-ovani (svi zavrseni).
+- Worktree cleanup za `H:/parser-studio-worktrees/m5-gold-corpus/` (cleanup po završetku taska).
+- Branch cleanup za `task/m5-gold-corpus` (vec merged u dev).
 
 
 ---
@@ -271,4 +271,6 @@ Cleanup zadaci (out-of-band):
 - **2026-09-14** — A2 acceptance ZAVRŠEN: Evidence domain u `src/parser_studio/domain/evidence/` (6 modela + adapter, svi frozen=True, slots=True) + 41 unit testova (svi PASS). pytest 221 PASS + 1 FAIL (test_f9 pre-existing benchmark regression), ruff 158 (+1 cell_compat upozorenje, u okviru tolerance), contract drift PASS. Domain NE importuje sqlite3/openpyxl/xlrd/PySide6/docling/contract. cell_compat koristi TYPE_CHECKING za legacy Cell. Graft blast: 52 seed simbola, 0 impacted dependents. Commit c1a07d6, pushan na origin/dev. Task Contract: `agent_reports/A2-task-contract.md`.
 - **2026-09-14** — M2 + M4 paralelni rad zavrsen. M2 (Mavis, H:/parser_studio-m2 worktree, grana task/m2-profile-builder): Profile Builder (V3 E1+E2) — LayoutFingerprint (SHA-256 hash sa sorted components) + LayoutProfile (vendor_id, version, rules, source_documents) + ProfileRule + RuleParameter u `src/parser_studio/domain/profiles/`. ProfileRepository Protocol + InMemoryProfileRepository. BuildLayoutProfile use case (version drift bump, fingerprint mismatch warning, common_metadata pravila). 67 novih testova. pyproject.toml: `addopts = ["--import-mode=importlib"]` dodan (fix za namespace conflict sa 3 nova test direktorija sa istim leaf name). M4 (Pi agent, H:/parser_studio-m4 worktree, grana task/m4-review-gui): InvoiceReviewView(QWidget) + CellTableView(QTableWidget, read-only) u `src/parser_studio/presentation/qt/widgets/`. `confirmed(str, object)` signal emisija. 14 novih testova (7 cell_table + 7 review). review_invoice_viewmodel.py netaknuto (Mavis-ov A7 output ostao nepromijenjen). Disjunktni ownership poštovan (M2 u domain/profiles/+application/profiles/+adapters/profiles/+ports/profile_repository.py, M4 u presentation/qt/widgets/). Merge redoslijed: M2 PRVI u dev (f3696c3), pa M4 (fd3f768). Mavis radi nezavisan review M4 (pošto je Mavis implementer M2, Implementer != Reviewer). pytest 571 PASS + 1 SKIP + 1 FAIL (test_f9 pre-existing, van scope), architecture 4/4 PASS, ruff 0 na M2+M4 fajlovima. FAZA B u toku (preostaje samo M5 Gold Corpus). Task Contracts: `agent_reports/M2-task-contract.md` + `agent_reports/M4-task-contract.md` + `agent_reports/2026-09-14-M4-briefing-prompt.md`. Evidence: `agent_reports/2026-09-14-M2-evidence.md` + `agent_reports/2026-09-14-M4-evidence.md`.
 
-- **2026-09-14** — FAZA UI0 (Product/GUI Blueprint) ZAKLJUČANA. V3.2 (dorađeni V3) donio novu FAZU UI0 prije FAZA A. Korisnikov draft `PARSER_STUDIO_GUI_BLUEPRINT_V1.md` postao kanonski `docs/GUI_BLUEPRINT.md` (proširen sa V3.2 §40A UI0.4 obaveznim stanjima: EMPTY, LOADING, PROFILE_MATCH_REVIEW; centralnim tokom + povratnim petljama). `docs/PLAN.md` zamijenjen sa V3.2 verzijom (56873 bytes); stari V3 premješten u `docs/istorija/PARSER_STUDIO_KANONSKI_PLAN_V3.md`. GATE-0 (GUI/UX Blueprint Locked) PASS. V3.2 ključne promjene: ARCH-011 (GUI/UX Blueprint se zaključava prije functional implementacije, novo nepormjenjivo pravilo), FAZA UI0 sa 6 podzadataka (UI0.1..UI0.6), OCR Reading Map (E2.5, novi concept izveden iz LayoutProfile-a, koristi `RegionTextReader` port + `LocalRegionOCR` adapter — još nisu implementirani u kodu). CURRENT_STATE ažuriran sa UI0 status DONE + GATE-0 lock. Sledeci milestone: M5 (Gold Corpus), serijski.
+- **2026-09-14** — M5 (Prvi Gold Corpus, V3 B5) DONE. Sintetički .xlsx generator u `tests/fixtures/gold/generator.py` (4 fakture: Faktura-1=11, Faktura-2=4, Medicopharm=84, Sumaprom=138 itema; UKUPNO 237 itema) + integration test u `tests/integration/test_gold_corpus.py` (11 testova, 4 klase: Structure, Import, Verify, Projection, Integration). Acceptance: 4 distinct documents, 2643 USER_CONFIRMED events (4×9 invoice + 237×11 item), sva 20 ciljnih polja prisutna po dokumentu. V3 ARCH-010 poštovan: SAMO sintetički podaci (NE stvarne fakture). pytest 582 PASS nakon M5 merge-a (+11 M5 testova od 571), architecture 4/4 PASS, ruff 0 na M5 scope. Production kod (`src/parser_studio/**`) netaknut — M5 je SAMO test + fixtures. Implementer: Mavis u `H:/parser-studio-worktrees/m5-gold-corpus/`. Commit fc1d003 (arch + docs), pushan na `origin/task/m5-gold-corpus`, merge-ovan u dev (Mavis radi kao koordinator za svoj rad). **FAZA B COMPLETE** (M1+M2+M3+M4+M5, 236 novih testova).
+
+- **2026-09-14** — FAZA UI0 (Product/GUI Blueprint) ZAKLJUČANA. V3.2 (dorađeni V3) donio novu FAZU UI0 prije FAZA A. Korisnikov draft `PARSER_STUDIO_GUI_BLUEPRINT_V1.md` postao kanonski `docs/GUI_BLUEPRINT.md` (proširen sa V3.2 §40A UI0.4 obaveznim stanjima: EMPTY, LOADING, PROFILE_MATCH_REVIEW; centralnim tokom + povratnim petljama). `docs/PLAN.md` zamijenjen sa V3.2 verzijom (56873 bytes); stari V3 premješten u `docs/istorija/PARSER_STUDIO_KANONSKI_PLAN_V3.md`. GATE-0 (GUI/UX Blueprint Locked) PASS. V3.2 ključne promjene: ARCH-011 (GUI/UX Blueprint se zaključava prije functional implementacije, novo nepormjenjivo pravilo), FAZA UI0 sa 6 podzadataka (UI0.1..UI0.6), OCR Reading Map (E2.5, novi concept izveden iz LayoutProfile-a, koristi `RegionTextReader` port + `LocalRegionOCR` adapter — još nisu implementirani u kodu). CURRENT_STATE ažuriran sa UI0 status DONE + GATE-0 lock.
