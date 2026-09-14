@@ -16,7 +16,7 @@ Lookup API:
 """
 from __future__ import annotations
 
-from .concept import Concept
+from .concept import Concept, _normalize_for_match
 
 # Svaki concept: (field, language, synonyms_tuple, context_phrases_tuple)
 # Sinonimi iz prakse BHS faktura + engleski termini.
@@ -454,7 +454,9 @@ class ConceptLibrary:
                 raise ValueError(f"Duplicate concept: {key}")
             self._by_key[key] = concept
             for syn in concept.synonyms:
-                normalized = syn.strip().lower()
+                normalized = _normalize_for_match(syn)
+                if not normalized:
+                    continue
                 if normalized in self._alias_index:
                     # First match wins (avoid ambiguity)
                     continue
@@ -467,11 +469,14 @@ class ConceptLibrary:
     def match_alias(self, normalized_text: str) -> tuple[str, str] | None:
         """Vrati (field, language) za exact match sinonima.
 
-        Case-insensitive, exact match (vec normalized).
+        Case-insensitive, NFKC + strip dijakritika (vidi _normalize_for_match).
         """
         if not normalized_text:
             return None
-        return self._alias_index.get(normalized_text.strip().lower())
+        key = _normalize_for_match(normalized_text)
+        if not key:
+            return None
+        return self._alias_index.get(key)
 
     def all_fields(self) -> tuple[str, ...]:
         """Vrati sortirane listu svih polja pokrivenih u library."""

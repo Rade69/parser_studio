@@ -7,7 +7,24 @@ Koriste ga Producer-i (C2) za match labela u dokumentu.
 """
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
+
+
+def _normalize_for_match(text: str) -> str:
+    """Normalizacija za match: NFKC + strip dijakritika + lowercase + trim.
+
+    Ekvivalentno normalize_header u domain.extraction (bez collapse whitespacea,
+    jer se match radi exact).
+    """
+    if not text:
+        return ""
+    nfkc = unicodedata.normalize("NFKC", text)
+    text_d = nfkc.replace("đ", "d").replace("Đ", "d")
+    text_clean = text_d.replace(".", "")
+    decomposed = unicodedata.normalize("NFD", text_clean)
+    stripped = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
+    return stripped.lower().strip()
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,13 +66,15 @@ class Concept:
     def matches_text(self, normalized_text: str) -> bool:
         """True ako normalized_text match-a bilo koji sinonim ovog koncepta.
 
-        Koristi exact match (case-insensitive, već normalized).
+        Koristi exact match sa normalizacijom (NFKC + strip dijakritika + lowercase).
         Za fuzzy match koristiti ConceptLibrary.match_alias sa rapidfuzz.
         """
         if not normalized_text:
             return False
-        text = normalized_text.strip().lower()
-        return any(syn.strip().lower() == text for syn in self.synonyms)
+        text = _normalize_for_match(normalized_text)
+        if not text:
+            return False
+        return any(_normalize_for_match(syn) == text for syn in self.synonyms)
 
     def has_phrase(self, normalized_text: str) -> bool:
         """True ako normalized_text SADRZI bilo koju context_phrase."""
