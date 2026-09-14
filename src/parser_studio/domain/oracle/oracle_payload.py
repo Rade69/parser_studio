@@ -3,7 +3,7 @@
 # Ne zna za: contract (ImportResult), adaptere, prezentaciju, SQLite.
 """OraclePayload — vendor-agnostički payload od oracle import-a.
 
-Adapteri (npr. DeklarantProOracle) prevode vendor ImportResult
+Adapteri (npr. DeclarantProOracle) prevode vendor ImportResult
 (contract/) u OraclePayload. Application sloj (OracleCandidateProducer)
 radi iskljucivo sa OraclePayload, NE sa vendor tipovima.
 

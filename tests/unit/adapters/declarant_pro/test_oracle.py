@@ -1,8 +1,8 @@
 """Unit testovi za DeclarantProOracle adapter.
 
 Koriste fake StrategyRegistry da izbjegnu zavisnost od stvarnog
-declarant_pro koda u unit testovima. Integration test (test_oracle_bootstrap.py)
-će pozvati stvarni declarant_pro put.
+DEKLARANT_PRO koda u unit testovima. Integration test (test_oracle_bootstrap.py)
+će pozvati stvarni DEKLARANT_PRO put.
 """
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ import pytest
 from contract.import_result import ImportResult
 from parser_studio.adapters.declarant_pro.oracle import DeclarantProOracle
 from parser_studio.adapters.declarant_pro.strategy_loader import (
-    DEFAULT_DECLARANT_PRO_ROOT,
-    ensure_declarant_pro_importable,
+    DEFAULT_DEKLARANT_PRO_ROOT,
+    ensure_DEKLARANT_PRO_importable,
     list_available_strategies,
 )
 from parser_studio.ports.parser_oracle import (
@@ -24,7 +24,7 @@ from parser_studio.ports.parser_oracle import (
 )
 
 # ============================================================
-# Fake strategija (imitira declarant_pro ImportStrategy)
+# Fake strategija (imitira DEKLARANT_PRO ImportStrategy)
 # ============================================================
 
 
@@ -91,7 +91,7 @@ class FakeRegistry:
 class TestOracleIdentity:
     def test_oracle_name_constant(self):
         oracle = DeclarantProOracle(registry=FakeRegistry())
-        assert oracle.oracle_name() == "declarant_pro"
+        assert oracle.oracle_name() == "DEKLARANT_PRO"
 
     def test_oracle_name_matches_constant(self):
         oracle = DeclarantProOracle(registry=FakeRegistry())
@@ -121,13 +121,21 @@ class TestCanHandle:
 
 
 class TestImportFileSuccess:
-    def test_returns_import_result_from_strategy(self):
-        expected = ImportResult(invoice_name="F-001", currency="EUR")
-        registry = FakeRegistry([FakeStrategy(import_result=expected)])
+    def test_returns_oracle_payload_from_strategy(self):
+        """import_file() pretvara ImportResult u OraclePayload (vendor-agnosticki)."""
+        from parser_studio.domain.oracle import OraclePayload
+
+        source = ImportResult(invoice_name="F-001", currency="EUR")
+        registry = FakeRegistry([FakeStrategy(import_result=source)])
         oracle = DeclarantProOracle(registry=registry)
 
         result = oracle.import_file(Path("test.xlsx"))
-        assert result is expected
+        # result je OraclePayload, NE ImportResult
+        assert isinstance(result, OraclePayload)
+        assert result.invoice_number == "F-001"
+        assert result.currency == "EUR"
+        # Original ImportResult NIJE izložen kroz port
+        assert result is not source
 
     def test_records_last_strategy_metadata(self):
         registry = FakeRegistry([
@@ -212,8 +220,11 @@ class TestErrorHandling:
 
 
 class TestLegacyListResponse:
-    def test_list_of_invoice_line_wrapped_in_import_result(self):
+    def test_list_of_invoice_line_wrapped_in_oracle_payload(self):
+        """Legacy List[InvoiceLine] se interno wrapuje u ImportResult,
+        pa pretvara u OraclePayload (vendor-agnosticki output)."""
         from contract.draft_types import InvoiceLine
+        from parser_studio.domain.oracle import OracleItem as OI, OraclePayload
 
         line = InvoiceLine(line_no=1, naziv_robe="test")
         registry = FakeRegistry([
@@ -221,29 +232,30 @@ class TestLegacyListResponse:
         ])
         oracle = DeclarantProOracle(registry=registry)
         result = oracle.import_file(Path("test.xlsx"))
-        assert isinstance(result, ImportResult)
+        assert isinstance(result, OraclePayload)
         assert len(result.items) == 2
-        assert result.items[0].naziv_robe == "test"
+        assert isinstance(result.items[0], OI)
+        assert result.items[0].description == "test"
 
 
 # ============================================================
-# Test: ensure_declarant_pro_importable
+# Test: ensure_DEKLARANT_PRO_importable
 # ============================================================
 
 
 class TestEnsureDeclarantProImportable:
     def test_raises_for_nonexistent_root(self, tmp_path):
         with pytest.raises(OracleUnavailableError) as exc_info:
-            ensure_declarant_pro_importable(tmp_path / "missing")
+            ensure_DEKLARANT_PRO_importable(tmp_path / "missing")
         assert "ne postoji" in str(exc_info.value)
 
     def test_idempotent_for_existing_root(self, tmp_path):
         """Ako je root već u sys.path, ne duplira se."""
         path_str = str(tmp_path.resolve())
         try:
-            ensure_declarant_pro_importable(tmp_path)
+            ensure_DEKLARANT_PRO_importable(tmp_path)
             first_count = __import__("sys").path.count(path_str)
-            ensure_declarant_pro_importable(tmp_path)
+            ensure_DEKLARANT_PRO_importable(tmp_path)
             second_count = __import__("sys").path.count(path_str)
             assert first_count == second_count == 1
         finally:
@@ -260,11 +272,11 @@ class TestEnsureDeclarantProImportable:
 
 class TestListAvailableStrategies:
     def test_default_root_constant_is_set(self):
-        """Default root je stvarna putanja (declarant_pro je instaliran)."""
-        assert DEFAULT_DECLARANT_PRO_ROOT == Path("H:/deklarant_pro")
+        """Default root je stvarna putanja (DEKLARANT_PRO je instaliran)."""
+        assert DEFAULT_DEKLARANT_PRO_ROOT == Path("H:/declarant_pro")
 
     def test_list_strategies_with_fake_registry(self, monkeypatch):
-        """Testiranje sa fake registry-jem (bez declarant_pro importa)."""
+        """Testiranje sa fake registry-jem (bez DEKLARANT_PRO importa)."""
 
         class FakeStrategyListLoader:
             @staticmethod
@@ -298,7 +310,7 @@ class TestListAvailableStrategies:
 
 class TestLazyRegistryLoad:
     def test_registry_loaded_lazily_on_first_call(self):
-        """Konstruktor NE učitava declarant_pro; load se radi na prvi
+        """Konstruktor NE učitava DEKLARANT_PRO; load se radi na prvi
         can_handle/import_file poziv."""
         oracle = DeclarantProOracle()
         # Oracle je konstruisan, ali još nema registry
@@ -351,7 +363,7 @@ class TestDependencyDirection:
     def test_strategy_loader_uses_ports_only(self):
         """Strategy loader baca OracleUnavailableError iz porta."""
         from parser_studio.adapters.declarant_pro.strategy_loader import (  # noqa
-            ensure_declarant_pro_importable,
+            ensure_DEKLARANT_PRO_importable,
         )
         # Tipovi iz porta — adapter nema svoje greške
         from parser_studio.ports.parser_oracle import OracleUnavailableError

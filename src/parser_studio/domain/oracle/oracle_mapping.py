@@ -32,7 +32,7 @@ INVOICE_LEVEL_MAP: dict[str, str] = {
     "due_date": "due_date",
     "invoice_total": "invoice_total",
     "currency": "currency",
-    "gross_weight_kg": "bruto_kg",  # bruto_kg je deklarant_pro naziv
+    "gross_weight_kg": "bruto_kg",  # bruto_kg je declarant_pro naziv
     "net_weight_kg": "neto_kg",
     "incoterm": "incoterm",
 }

@@ -1,10 +1,10 @@
-# Adapters/declarant_pro: strategy_loader.
+# Adapters/DEKLARANT_PRO: strategy_loader.
 # Helper za učitavanje Deklarant Pro StrategyRegistry i introspekciju strategija.
-"""Strategy loader — izolira declarant_pro import iza jedne funkcije.
+"""Strategy loader — izolira DEKLARANT_PRO import iza jedne funkcije.
 
-Sva mjesta u Parser Studio kodu koja trebaju declarant_pro import
+Sva mjesta u Parser Studio kodu koja trebaju DEKLARANT_PRO import
 idu kroz load_default_registry() ili list_available_strategies().
-Ako declarant_pro nije dostupan, OracleUnavailableError se baca.
+Ako DEKLARANT_PRO nije dostupan, OracleUnavailableError se baca.
 
 Testovi mogu proslijediti fake registry umjesto da zovu
 load_default_registry().
@@ -17,9 +17,9 @@ from typing import NamedTuple
 
 from parser_studio.ports.parser_oracle import OracleUnavailableError
 
-# Default lokacija declarant_pro koda (read-only).
-# Može se overridati kroz DECLARANT_PRO_ROOT env var ili load_default_registry argument.
-DEFAULT_DECLARANT_PRO_ROOT = Path("H:/deklarant_pro")
+# Default lokacija DEKLARANT_PRO koda (read-only).
+# Može se overridati kroz DEKLARANT_PRO_ROOT env var ili load_default_registry argument.
+DEFAULT_DEKLARANT_PRO_ROOT = Path("H:/declarant_pro")
 
 
 class StrategyInfo(NamedTuple):
@@ -29,11 +29,11 @@ class StrategyInfo(NamedTuple):
     priority: int
 
 
-def ensure_declarant_pro_importable(root: Path) -> None:
-    """Dodaj declarant_pro root u sys.path ako već nije.
+def ensure_DEKLARANT_PRO_importable(root: Path) -> None:
+    """Dodaj DEKLARANT_PRO root u sys.path ako već nije.
 
     Side-effect: sys.path se mijenja. Ovo je intentionalno — adapter
-    JE most, application/ ne vidi declarant_pro.
+    JE most, application/ ne vidi DEKLARANT_PRO.
 
     Raises:
         OracleUnavailableError: ako root ne postoji na disku
@@ -43,7 +43,7 @@ def ensure_declarant_pro_importable(root: Path) -> None:
         return
     if not root.exists():
         raise OracleUnavailableError(
-            f"declarant_pro root ne postoji na disku: {root}"
+            f"DEKLARANT_PRO root ne postoji na disku: {root}"
         )
     sys.path.insert(0, root_str)
 
@@ -51,26 +51,26 @@ def ensure_declarant_pro_importable(root: Path) -> None:
 def load_default_registry(
     root: Path | None = None,
 ):
-    """Učitaj declarant_pro StrategyRegistry (singleton).
+    """Učitaj DEKLARANT_PRO StrategyRegistry (singleton).
 
     Registruje default strategije (PDF, Excel, XML) na prvi poziv.
     Vraćeni registry ima import_file() metod.
 
     Args:
-        root: opcioni override za declarant_pro root;
-              default = DEFAULT_DECLARANT_PRO_ROOT ili $DECLARANT_PRO_ROOT env
+        root: opcioni override za DEKLARANT_PRO root;
+              default = DEFAULT_DEKLARANT_PRO_ROOT ili $DEKLARANT_PRO_ROOT env
 
     Returns:
-        StrategyRegistry (declarant_pro tip)
+        StrategyRegistry (DEKLARANT_PRO tip)
 
     Raises:
-        OracleUnavailableError: ako declarant_pro nije importable
+        OracleUnavailableError: ako DEKLARANT_PRO nije importable
     """
     if root is None:
-        env_root = __import__("os").environ.get("DECLARANT_PRO_ROOT")
-        root = Path(env_root) if env_root else DEFAULT_DECLARANT_PRO_ROOT
+        env_root = __import__("os").environ.get("DEKLARANT_PRO_ROOT")
+        root = Path(env_root) if env_root else DEFAULT_DEKLARANT_PRO_ROOT
 
-    ensure_declarant_pro_importable(root)
+    ensure_DEKLARANT_PRO_importable(root)
 
     try:
         from importers.strategy_registry import (
@@ -78,7 +78,7 @@ def load_default_registry(
         )
     except ImportError as exc:
         raise OracleUnavailableError(
-            f"declarant_pro moduli nisu importable sa root={root}: {exc}"
+            f"DEKLARANT_PRO moduli nisu importable sa root={root}: {exc}"
         ) from exc
 
     return get_registry()
@@ -90,7 +90,7 @@ def list_available_strategies(
     """Introspekcija: listaj sve registrovane strategije.
 
     Args:
-        root: opcioni override za declarant_pro root
+        root: opcioni override za DEKLARANT_PRO root
 
     Returns:
         Lista StrategyInfo (name, priority), sortirano po priority desc.

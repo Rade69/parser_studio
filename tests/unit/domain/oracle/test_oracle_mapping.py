@@ -41,11 +41,11 @@ class TestInvoiceLevelMap:
         assert INVOICE_LEVEL_MAP["invoice_total"] == "invoice_total"
 
     def test_gross_weight_uses_bruto_alias(self):
-        """deklarant_pro naziv 'bruto_kg' mapira se na canonical 'gross_weight_kg'."""
+        """declarant_pro naziv 'bruto_kg' mapira se na canonical 'gross_weight_kg'."""
         assert INVOICE_LEVEL_MAP["gross_weight_kg"] == "bruto_kg"
 
     def test_net_weight_uses_neto_alias(self):
-        """deklarant_pro naziv 'neto_kg' mapira se na canonical 'net_weight_kg'."""
+        """declarant_pro naziv 'neto_kg' mapira se na canonical 'net_weight_kg'."""
         assert INVOICE_LEVEL_MAP["net_weight_kg"] == "neto_kg"
 
     def test_incoterm_maps(self):

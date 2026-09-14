@@ -30,6 +30,9 @@ class FakeOracle:
     def import_file(self, path, progress=None):
         return self._result
 
+    def validate_import(self, path):
+        return (True, [], [])
+
 
 class TestParserOracleProtocol:
     def test_protocol_is_runtime_checkable(self):
@@ -80,9 +83,9 @@ class TestOracleErrors:
 
     def test_oracle_unavailable_can_carry_path(self):
         try:
-            raise OracleUnavailableError("deklarant_pro root: /foo")
+            raise OracleUnavailableError("declarant_pro root: /foo")
         except OracleUnavailableError as exc:
-            assert "deklarant_pro" in str(exc)
+            assert "declarant_pro" in str(exc)
 
 
 class TestErrorHierarchyCatching:
