@@ -1,11 +1,12 @@
 ---
 task_id: A7
 title: "Presentation migracija + cleanup legacy strukture + architecture tests + pyproject.toml cleanup"
-status: ACTIVE
+status: DONE
 risk: MEDIUM-HIGH
 date: 2026-09-14
 branch: dev (base)
-worktree: TBD
+worktree: N/A
+commit: 5ed50ea
 ---
 
 # A7 — Presentation migracija + cleanup
