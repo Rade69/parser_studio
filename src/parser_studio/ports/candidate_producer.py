@@ -26,6 +26,8 @@ class FieldContext:
     field: str
     language: str = "bs"
     profile_version: int | None = None
+    line_no: int | None = None
+    oracle_payload: OraclePayload | None = None  # noqa: F821 — type-checked lazy
 
     def __post_init__(self) -> None:
         if not self.document_id:
