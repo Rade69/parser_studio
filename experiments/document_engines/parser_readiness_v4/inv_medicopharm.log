@@ -1,0 +1,62 @@
+﻿python.exe : [32m[INFO] 2026-09-13 11:04:12,824 [RapidOCR] base.py:23: Using engine_name: torch[0m
+At line:1 char:110
++ ... ERED = '1'; & 'H:\parser_studio\experiments\document_engines\docling_ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([32m[INFO] 202...name: torch[0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[32m[INFO] 2026-09-13 11:04:12,847 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:04:12,880 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\PP-OCRv6_det_small.pth[0m
+[32m[INFO] 2026-09-13 11:04:12,880 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\PP-OCRv6_det_small.pth[0m
+[32m[INFO] 2026-09-13 11:04:13,330 [RapidOCR] base.py:23: Using engine_name: torch[0m
+[32m[INFO] 2026-09-13 11:04:13,331 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:04:13,349 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth[0m
+[32m[INFO] 2026-09-13 11:04:13,349 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth[0m
+[32m[INFO] 2026-09-13 11:04:13,531 [RapidOCR] base.py:23: Using engine_name: torch[0m
+[32m[INFO] 2026-09-13 11:04:13,531 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:04:13,584 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\PP-OCRv6_rec_small.pth[0m
+[32m[INFO] 2026-09-13 11:04:13,584 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\PP-OCRv6_rec_small.pth[0m
+
+Loading weights:   0%|          | 0/770 [00:00<?, ?it/s]
+Loading weights:  30%|███       | 231/770 [00:00<00:00, 2227.46it/s]
+Loading weights:  59%|█████▉    | 454/770 [00:00<00:00, 1291.79it/s]
+Loading weights: 100%|██████████| 770/770 [00:00<00:00, 2029.26it/s]
+H:\parser_studio\experiments\document_engines\docling_env\Lib\site-packages\torch\nn\modules\conv.py:560: UserWarning: 
+Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (
+Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\Convolution.cpp:1105.)
+  return F.conv2d(
+2026-09-13 11:05:17,628 MatchingPostProcessor WARNING  Orphan pdf_cell 35 recovered to col=9 by nearest-column fallback (row=0, x=979.2, dist=91.2)
+2026-09-13 11:05:17,628 MatchingPostProcessor WARNING  Orphan pdf_cell 41 recovered to col=2 by nearest-column fallback (row=0, x=358.2, dist=92.5)
+2026-09-13 11:05:17,628 MatchingPostProcessor WARNING  Orphan pdf_cell 45 recovered to col=8 by nearest-column fallback (row=0, x=960.4, dist=73.0)
+2026-09-13 11:07:18,342 MatchingPostProcessor WARNING  Orphan pdf_cell 455 recovered to row=37 by nearest-row fallback (col=5, y=1472.3, dist=19.4)
+{
+  "status": "ok",
+  "file": "Medicopharm.pdf",
+  "size_bytes": 1603749,
+  "is_digital": false,
+  "n_pages_pdf": 4,
+  "n_pages_docling": 4,
+  "n_tables": 5,
+  "n_cells": 1142,
+  "n_text_items": 0,
+  "max_text_item_len": 0,
+  "elapsed_total_s": 256.22,
+  "docling_import_s": 33.45,
+  "converter_init_s": 0.26,
+  "convert_s": 222.5,
+  "rss_pre_mb": 18.8,
+  "rss_after_init_mb": 344.2,
+  "rss_end_mb": 887.0,
+  "language": "unknown",
+  "body_sample": ""
+}
+saved: H:\parser_studio\experiments\document_engines\quality_v3\raw_extraction\inventory_Medicopharm.json
+The following objects are still open and will now be closed: [<PdfDocument 0x2bd2aa6b190 from 'H:\\parser_studio\\tests
+\\fakture\\Medicopharm.pdf'>, <PdfDocument 0x2bd42d87110 from 'H:\\parser_studio\\tests\\fakture\\Medicopharm.pdf'>, <P
+dfPage 0x2bd42a39c90>]

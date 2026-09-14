@@ -1,0 +1,5 @@
+﻿Faktura-1.pdf: exporter=False, invoice_no=None, currency=None, bruto=None, neto=None, origin_stmt=True
+Faktura-2.pdf: exporter=False, invoice_no=None, currency=None, bruto=None, neto=None, origin_stmt=True
+Medicopharm.pdf: exporter=True, invoice_no=None, currency=EUR, bruto=300.0, neto=None, origin_stmt=False
+Sumaprom.pdf: exporter=False, invoice_no=/, currency=EUR, bruto=266.0, neto=None, origin_stmt=True
+saved: H:\parser_studio\experiments\document_engines\quality_v3\raw_extraction\invoice_meta_results.json

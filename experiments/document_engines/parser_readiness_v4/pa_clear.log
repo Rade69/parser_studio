@@ -1,0 +1,36 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.1, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\38765\AppData\Local\Programs\Python\Python314\python.exe
+cachedir: .pytest_cache
+PySide6 6.11.1 -- Qt runtime 6.11.1 -- Qt compiled 6.11.1
+rootdir: H:\parser_studio
+configfile: pyproject.toml
+plugins: anyio-4.13.0, cov-7.1.0, qt-4.5.0
+collecting ... collected 1 item
+
+tests/unit/test_price_amount_resolver.py::test_resolve_clear_assignment FAILED [100%]
+
+================================== FAILURES ===================================
+________________________ test_resolve_clear_assignment ________________________
+
+    def test_resolve_clear_assignment():
+        rows = [
+            {"col_q": 10, "col_p": 5.50, "col_a": 55.00},
+            {"col_q": 20, "col_p": 3.20, "col_a": 64.00},
+            {"col_q": 5, "col_p": 12.00, "col_a": 60.00},
+            {"col_q": 15, "col_p": 2.75, "col_a": 41.25},
+            {"col_q": 8, "col_p": 8.40, "col_a": 67.20},
+        ]
+        result = resolve_price_amount(rows, ["col_q", "col_p", "col_a"])
+        assert result["best_assignment"]["q"] == "col_q"
+        assert result["best_assignment"]["p"] == "col_p"
+        assert result["best_assignment"]["a"] == "col_a"
+>       assert result["confidence"] == "HIGH"
+E       AssertionError: assert 'UNRESOLVED' == 'HIGH'
+E         
+E         - HIGH
+E         + UNRESOLVED
+
+tests\unit\test_price_amount_resolver.py:55: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/unit/test_price_amount_resolver.py::test_resolve_clear_assignment
+============================== 1 failed in 0.18s ==============================

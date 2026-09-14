@@ -1,0 +1,5 @@
+﻿Faktura-1: FALSE eligible=11 failed=0 rate=0.0 severe=0
+Faktura-2: NO F10 ROWS in ground-truth
+Medicopharm: FALSE eligible=6 failed=0 rate=0.0 severe=0
+Sumaprom: FALSE eligible=10 failed=0 rate=0.0 severe=0
+summary: H:\parser_studio\experiments\document_engines\outputs\f10_groundtruth_summary.json

@@ -1,0 +1,57 @@
+﻿python.exe : [32m[INFO] 2026-09-13 11:08:27,432 [RapidOCR] base.py:23: Using engine_name: torch[0m
+At line:1 char:110
++ ... ERED = '1'; & 'H:\parser_studio\experiments\document_engines\docling_ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([32m[INFO] 202...name: torch[0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[32m[INFO] 2026-09-13 11:08:27,447 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:08:27,463 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\PP-OCRv6_det_small.pth[0m
+[32m[INFO] 2026-09-13 11:08:27,463 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\PP-OCRv6_det_small.pth[0m
+[32m[INFO] 2026-09-13 11:08:27,676 [RapidOCR] base.py:23: Using engine_name: torch[0m
+[32m[INFO] 2026-09-13 11:08:27,676 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:08:27,680 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth[0m
+[32m[INFO] 2026-09-13 11:08:27,680 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth[0m
+[32m[INFO] 2026-09-13 11:08:27,799 [RapidOCR] base.py:23: Using engine_name: torch[0m
+[32m[INFO] 2026-09-13 11:08:27,799 [RapidOCR] device_config.py:57: Using CPU device[0m
+[32m[INFO] 2026-09-13 11:08:27,829 [RapidOCR] download_file.py:60: File exists and is valid: H:\parser_studio\experime
+nts\document_engines\docling_env\Lib\site-packages\rapidocr\models\PP-OCRv6_rec_small.pth[0m
+[32m[INFO] 2026-09-13 11:08:27,829 [RapidOCR] main.py:50: Using H:\parser_studio\experiments\document_engines\docling_
+env\Lib\site-packages\rapidocr\models\PP-OCRv6_rec_small.pth[0m
+
+Loading weights:   0%|          | 0/770 [00:00<?, ?it/s]
+Loading weights:  33%|███▎      | 257/770 [00:00<00:00, 2552.28it/s]
+Loading weights:  67%|██████▋   | 513/770 [00:00<00:00, 2218.94it/s]
+Loading weights: 100%|██████████| 770/770 [00:00<00:00, 3259.50it/s]
+H:\parser_studio\experiments\document_engines\docling_env\Lib\site-packages\torch\nn\modules\conv.py:560: UserWarning: 
+Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (
+Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\Convolution.cpp:1105.)
+  return F.conv2d(
+{
+  "status": "ok",
+  "file": "Sumaprom.pdf",
+  "size_bytes": 2193619,
+  "is_digital": false,
+  "n_pages_pdf": 4,
+  "n_pages_docling": 4,
+  "n_tables": 4,
+  "n_cells": 1109,
+  "n_text_items": 0,
+  "max_text_item_len": 0,
+  "elapsed_total_s": 205.44,
+  "docling_import_s": 6.21,
+  "converter_init_s": 0.1,
+  "convert_s": 199.13,
+  "rss_pre_mb": 18.7,
+  "rss_after_init_mb": 344.9,
+  "rss_end_mb": 1132.3,
+  "language": "unknown",
+  "body_sample": ""
+}
+saved: H:\parser_studio\experiments\document_engines\quality_v3\raw_extraction\inventory_Sumaprom.json
+The following objects are still open and will now be closed: [<PdfDocument 0x2054e590dd0 from 'H:\\parser_studio\\tests
+\\fakture\\Sumaprom.pdf'>]

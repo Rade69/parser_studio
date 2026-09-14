@@ -33,3 +33,6 @@ signing_key*
 # Lokalna konfiguracija (putanje do deklarant_pro, do kljuca)
 config.local.json
 .env
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
