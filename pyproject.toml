@@ -1,7 +1,7 @@
 [project]
 name = "parser-studio"
-version = "0.1.0"
-description = "Alat za poluautomatsko pravljenje parsera faktura za Deklarant Pro (bez LLM-a)"
+version = "0.2.0"
+description = "Learning-first alat za izradu i verifikaciju parsera faktura za Deklarant Pro"
 requires-python = ">=3.11"
 dependencies = [
     "PySide6>=6.6",
@@ -23,9 +23,12 @@ dev = [
 [project.scripts]
 psbuild = "cli.psbuild:main"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = ["src", "."]
 markers = [
     "gui: testovi koji zahtijevaju Qt (preskacu se u headless CI)",
     "realdata: testovi koji zahtijevaju stvarne uzorke faktura van repozitorijuma",
