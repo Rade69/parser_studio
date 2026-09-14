@@ -12,6 +12,7 @@ GUI (FAZA B / M4) bude pozivao ovaj use case sa korisnickim inputom.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
 
 from parser_studio.domain.evidence.locator import Locator
@@ -21,9 +22,21 @@ from parser_studio.domain.learning.learning_event import EventType, LearningEven
 
 @runtime_checkable
 class LearningRepository(Protocol):
-    """Port za pohranu learning events. A6 ce implementirati SQLite adapter."""
+    """Port za pohranu learning events. A6 implementira SQLite adapter."""
 
     def append(self, event: LearningEvent) -> None:
+        ...
+
+    def events_for(
+        self, document_id: str, field: str | None = None
+    ) -> list[LearningEvent]:
+        """Vrati sve evente za dati dokument (opcionalno po polju)."""
+        ...
+
+    def events_since(
+        self, since: datetime, field: str | None = None
+    ) -> list[LearningEvent]:
+        """Vrati evente kreirane poslije 'since' (opcionalno po polju)."""
         ...
 
 
