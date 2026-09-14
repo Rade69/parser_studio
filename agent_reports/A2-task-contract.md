@@ -1,7 +1,7 @@
 ---
 task_id: A2
 title: "Evidence domain — Locator, Evidence, DocumentEvidence, Candidate, ExtractionContext"
-status: ACTIVE
+status: DONE
 risk: MEDIUM-HIGH
 date: 2026-09-14
 branch: dev (base)

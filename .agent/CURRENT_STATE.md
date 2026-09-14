@@ -138,8 +138,8 @@ Većina grešaka je u `tests/unit/test_table_stitcher.py` i drugim benchmark/tes
 | Korak | Status | Dokaz |
 |---|---|---|
 | A0 | DONE | Baseline zabilježen, contract drift PASS, V3 u `docs/PLAN.md`, stari planovi u `docs/istorija/`, `.gitignore` provjeren. |
-| A1 | DONE | `src/parser_studio/` skelet kreiran (18 `__init__.py` + `bootstrap.py`), `pyproject.toml` packages.find.where=src, pythonpath=["src","."]. pytest ista statistika, ruff 157, contract drift PASS. Commit b1671f6, pushan. |
-| A2 | NOT_STARTED | Domain modeli `Locator`/`Evidence`/`Candidate` ne postoje. |
+| A1 | DONE | `src/parser_studio/` skelet kreiran (18 `__init__.py` + `bootstrap.py`), `pyproject.toml` packages.find.where=src, pythonpath=["src","."]. Commit b1671f6, pushan. |
+| A2 | DONE | Evidence domain u `src/parser_studio/domain/evidence/`: 6 modela (Locator, Evidence, DocumentEvidence, Candidate, ExtractionContext) + cell_compat adapter + 41 unit testova (svi PASS). pytest 221 PASS + 1 FAIL (test_f9 pre-existing). Commit c1a07d6, pushan. |
 | A3 | NOT_STARTED | Excel adapter nije u `adapters/documents/excel_reader.py`. |
 | A4 | NOT_STARTED | `Engine` koncept još postoji; `CandidateProducer` nije uveden. |
 | A5 | NOT_STARTED | Application use-case skeleton nije kreiran. |
@@ -222,3 +222,4 @@ A1/A2 zahtijevaju zaseban Task Contract prije pokretanja (po `agent_reports/TASK
 - **2026-09-14** — Source dokumenti (`PARSER_STUDIO_*.md`, `GRAFT_ADOPTION_PLAYBOOK.md`) UNTRACKED u radnom stablu; arhiviraju se u root u sklopu framework PR-a.
 - **2026-09-14** — 2 root fajla DELETED u radnom stablu (`PARSER_STUDIO_KONSOLIDOVANI_PLAN_I_PREPORUKE.md`, stari `PLAN.md`) — sadržaj je u git historiji; ne vraćaju se fizički.
 - **2026-09-14** — A1 acceptance ZAVRŠEN: `src/parser_studio/` skelet kreiran (18 `__init__.py` + `bootstrap.py`), `pyproject.toml` packages.find.where=src, pythonpath=["src","."]. pytest ista statistika (180 PASS + 1 FAIL), ruff 157 (nije pogoršano), contract drift PASS, `import parser_studio.bootstrap` OK. Graft blast: 20 seed simbola, 0 impacted dependents. Commit b1671f6, pushan na origin/dev. Task Contract: `agent_reports/A1-task-contract.md`.
+- **2026-09-14** — A2 acceptance ZAVRŠEN: Evidence domain u `src/parser_studio/domain/evidence/` (6 modela + adapter, svi frozen=True, slots=True) + 41 unit testova (svi PASS). pytest 221 PASS + 1 FAIL (test_f9 pre-existing benchmark regression), ruff 158 (+1 cell_compat upozorenje, u okviru tolerance), contract drift PASS. Domain NE importuje sqlite3/openpyxl/xlrd/PySide6/docling/contract. cell_compat koristi TYPE_CHECKING za legacy Cell. Graft blast: 52 seed simbola, 0 impacted dependents. Commit c1a07d6, pushan na origin/dev. Task Contract: `agent_reports/A2-task-contract.md`.
