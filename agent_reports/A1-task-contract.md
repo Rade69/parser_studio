@@ -1,7 +1,7 @@
 ---
 task_id: A1
 title: "src/parser_studio/ package layout — kreiranje nove fizičke strukture"
-status: ACTIVE
+status: DONE
 risk: MEDIUM
 date: 2026-09-14
 branch: dev (base)
